@@ -1,0 +1,13 @@
+/* frontend/src/styles/admin.css */
+.admin-wrap { display: flex; height: 100vh; font-family: Inter, system-ui, sans-serif; }
+.admin-sidebar { width: 220px; background:#0f172a; color:#fff; padding:20px; box-sizing:border-box; }
+.admin-sidebar .brand { font-weight:700; margin-bottom:20px; }
+.admin-sidebar ul { list-style: none; padding:0; margin:0; }
+.admin-sidebar li { padding:10px; cursor:pointer; border-radius:6px; margin-bottom:6px; }
+.admin-sidebar li.active, .admin-sidebar li:hover { background:#111827; }
+.admin-main { flex:1; padding:24px; overflow:auto; background:#f8fafc; }
+.grid { display:grid; grid-template-columns: 1fr 1.6fr; gap:20px; }
+.col { background:white; padding:16px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+h2 { margin-top:0; }
+.product-table { width:100%; border-collapse:collapse; }
+.product-table th, .product-table td { border:1px solid #eee; padding:8px; text-align:left; }

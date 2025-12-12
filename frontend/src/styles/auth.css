@@ -1,0 +1,190 @@
+/* -------- Global -------- */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+  background: transparent !important;
+}
+
+/* -------- Layout -------- */
+.page-shell {
+  position: relative;
+  min-height: 100vh;
+  color: white;
+  overflow: hidden;
+}
+
+/* -------- Background (JSX controlled) -------- */
+.jsx-bg {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.45) blur(3px);
+  z-index: -2;
+}
+
+.jsx-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.152);
+  z-index: -1;
+}
+
+/* -------- Topbar -------- */
+.topbar {
+  padding: 20px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(20, 20, 20, 0.35);
+  backdrop-filter: blur(6px);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+/* -------- Auth Card -------- */
+.auth-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: 80px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  padding: 34px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+}
+
+.auth-title {
+  text-align: center;
+  font-size: 26px;
+  margin-bottom: 6px;
+}
+
+.auth-subtitle {
+  text-align: center;
+  color: #d1d5db;
+  margin-bottom: 22px;
+}
+
+/* -------- Form -------- */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.label {
+  font-size: 14px;
+  color: #e5e7eb;
+}
+
+.input{
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+.input::placeholder{
+  color: rgba(255,255,255,0.6);
+}
+
+.sec3 .input{
+  text-align: center;
+}
+/* -------- Buttons -------- */
+.auth-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 6px;
+}
+#logout{
+  padding: 5px;
+  font-size: 14px;
+  width: fit-content;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+  margin: 2px;
+}
+
+.auth-actions .btn {
+  flex: 1;
+}
+
+.btn {
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+}
+
+.btn.primary {
+  background: #f97316;
+  color: white;
+}
+
+.btn.ghost {
+  background: rgba(255,255,255,0.25);
+  color: white;
+}
+
+/* -------- Forgot Password -------- */
+.forgot-password {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 14px;
+  color: #fbbf24;
+  cursor: pointer;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+/* -------- Error -------- */
+.error {
+  background: rgba(255,0,0,0.35);
+  padding: 10px;
+  width: fit-content;
+  text-align: center;
+  margin: auto;
+  border-radius: 8px;
+  color: #fff;
+  text-align: center;
+}
+.forgot-card{
+  text-align: center;
+}
+.sec1,.sec2,.sec3{
+  display:flex;
+  flex-direction: row;
+  gap: 20px;
+  justify-content: center;
+}
+.close-btn{
+  background:none;
+  border:none;
+  font-size:20px;
+  color:#fff;
+  cursor:pointer;
+}
+/* -------- Mobile -------- */
+@media (max-width: 480px) {
+  .auth-actions {
+    flex-direction: column;
+  }
+}
