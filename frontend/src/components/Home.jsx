@@ -5,7 +5,7 @@ import SweetCard from "./SweetCard";
 import CartModal from "./CardModal";
 import "../styles/customer.css";
 import "../styles/Home.css";
-
+import OrdersModal from "./OrdersModal";
 function buildApiBase() {
   const apiBase = import.meta.env.VITE_API_BASE || "http://localhost:4000/api";
   return apiBase.replace(/\/api\/?$/, "");
@@ -24,6 +24,8 @@ export default function Home() {
   const [perPage] = useState(12);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
+  const [orders, setOrders] = useState([]);
+  const [showOrders, setShowOrders] = useState(false);
 
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
@@ -50,10 +52,15 @@ export default function Home() {
   useEffect(() => {
     loadCart();
   }, []);
+    async function loadOrders() {
+      try {
+        const res = await api.getMyOrders();
+        setOrders(res || []);
+      } catch {
+        setOrders([]);
+      }
+    }
 
-  /* ===============================
-     🛒 ADD TO CART (MONGO ONLY)
-     =============================== */
  async function handleAddToCart(item) {
   try {
     // 🛑 HARD GUARDS
@@ -244,6 +251,16 @@ export default function Home() {
         <button className="view-cart-btn" onClick={() => setShowCart(true)}>
           🛒 View Cart ({cart.length})
         </button>
+        <button
+        className="view-cart-btn"
+        onClick={async () => {
+          await loadOrders();
+          setShowOrders(true);
+        }}
+      >
+        📦 My Orders
+      </button>
+
       </div>
 
       <div className="grid">
@@ -266,6 +283,13 @@ export default function Home() {
         />
 
       )}
+      {showOrders && (
+        <OrdersModal
+          orders={orders}
+          onClose={() => setShowOrders(false)}
+        />
+      )}
+
 
       <div className="catalog">
         <div className="catalog-header">

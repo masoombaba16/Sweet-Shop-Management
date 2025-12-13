@@ -29,7 +29,7 @@ app.use("/api/sweets", sweetsRoutes);
 app.use("/api/categories", categoriesRoutes);
 app.use("/api/orders", ordersRoutes);
 app.use("/api/customers", customersRoutes);
-
+app.use("/api/checkout", require("./routes/checkout"));
 app.use("/api/cart", require("./routes/cart"));
 
 // health

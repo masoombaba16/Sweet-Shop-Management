@@ -126,6 +126,49 @@ router.put("/update", authenticate, async (req, res) => {
 });
 
 
+router.post("/checkout/otp", authenticate, async (req, res) => {
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  req.user.forgotPasswordOtp = otp;
+  req.user.forgotPasswordOtpExpires = Date.now() + 5 * 60 * 1000;
+  await req.user.save();
+
+  console.log("📧 OTP:", otp); // later send email
+
+  res.json({ message: "OTP sent" });
+});
+router.post("/checkout/confirm", authenticate, async (req, res) => {
+  const { address, otp } = req.body;
+
+  if (
+    otp !== req.user.forgotPasswordOtp ||
+    Date.now() > req.user.forgotPasswordOtpExpires
+  ) {
+    return res.status(400).json({ message: "Invalid OTP" });
+  }
+
+  const cart = await Cart.findOne({ user: req.user.id });
+  if (!cart || cart.items.length === 0) {
+    return res.status(400).json({ message: "Cart is empty" });
+  }
+
+  // 🔥 reduce stock
+  for (const item of cart.items) {
+    await Sweet.findOneAndUpdate(
+      { sweetId: item.sweetId },
+      { $inc: { quantity: -(item.grams / 1000) } }
+    );
+  }
+
+  cart.items = [];
+  await cart.save();
+
+  req.user.forgotPasswordOtp = null;
+  req.user.forgotPasswordOtpExpires = null;
+  await req.user.save();
+
+  res.json({ message: "Order placed successfully" });
+});
 
 router.delete("/remove/:sweetId", authenticate, async (req, res) => {
   try {

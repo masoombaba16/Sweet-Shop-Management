@@ -47,7 +47,12 @@ body, html {
   margin: 0;
   font-size: 26px;
 }
-
+.card-modal{
+  width: 90vw;
+}
+td{
+  text-align: center;
+}
 /* -------- Auth Card -------- */
 .auth-wrapper {
   width: 100%;
@@ -118,7 +123,16 @@ body, html {
   color:#fff;
   cursor:pointer;
 }
-
+.close-btn2{
+  background:none;
+  border:none;
+  font-size:20px;
+  color:#000;
+  cursor:pointer;
+}
+#close-btn{
+  margin: auto;
+}
 .auth-actions .btn {
   flex: 1;
 }
@@ -195,7 +209,7 @@ body, html {
   background:none;
   border:none;
   font-size:20px;
-  color:#fff;
+  color:red;
   cursor:pointer;
 }
 /* -------- Mobile -------- */

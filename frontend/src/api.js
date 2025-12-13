@@ -154,6 +154,24 @@ getSweetBySweetId: (sweetId) =>
       method: "PUT",
       body: JSON.stringify(body),
     }),
+sendOtp: () =>
+  fetcher("/checkout/send-otp", {
+    method: "POST",
+  }),
+
+verifyOtp: (body) =>
+  fetcher("/checkout/verify-otp", {
+    method: "POST",
+    body: JSON.stringify(body),
+  }),
+
+placeOrder: (body) =>
+  fetcher("/checkout/place-order", {
+    method: "POST",
+    body: JSON.stringify(body),
+  }),
+
+getMyOrders: () => fetcher("/orders/my-orders"),
 
   removeCartItem: (sweetId) =>
     fetcher(`/cart/remove/${sweetId}`, {

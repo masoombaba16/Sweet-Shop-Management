@@ -1,18 +1,20 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { api } from "../api";
 import "../styles/cart.css";
+import CheckoutModal from "./CheckoutModal";
 
 const MIN_GRAMS = 200;
 
 export default function CartModal({
   cart,
   onClose,
-  onUpdateItem,   // keep prop (used to refresh cart)
+  onUpdateItem,
   onDeleteItem
 }) {
   const [errors, setErrors] = useState({});
   const [draftQty, setDraftQty] = useState({});
   const [loadingStock, setLoadingStock] = useState({});
+  const [showCheckout, setShowCheckout] = useState(false);
 
   /* 🔁 Sync cart → editable values */
   useEffect(() => {
@@ -32,7 +34,6 @@ export default function CartModal({
     }, 0);
   }, [cart, draftQty]);
 
-  /* ✍️ typing */
   function handleChange(item, value) {
     setDraftQty(prev => ({
       ...prev,
@@ -46,15 +47,11 @@ export default function CartModal({
     });
   }
 
-  /* 🔥 REAL-TIME VALIDATION + DB UPDATE */
   async function handleBlur(item) {
     const grams = Number(draftQty[item.sweetId]);
 
     if (!Number.isFinite(item.sweetId)) {
-      setErrors(e => ({
-        ...e,
-        [item.sweetId]: "Invalid item"
-      }));
+      setErrors(e => ({ ...e, [item.sweetId]: "Invalid item" }));
       return;
     }
 
@@ -69,34 +66,28 @@ export default function CartModal({
     try {
       setLoadingStock(s => ({ ...s, [item.sweetId]: true }));
 
-      // 🔥 1. REAL-TIME STOCK CHECK
       const sweet = await api.getSweetBySweetId(item.sweetId);
       const maxGrams = sweet.quantity * 1000;
 
       if (grams > maxGrams) {
         setErrors(e => ({
           ...e,
-          [item.sweetId]:
-            `Maximum available quantity is ${maxGrams} grams`
+          [item.sweetId]: `Maximum available quantity is ${maxGrams} grams`
         }));
         return;
       }
 
-      // 🔥 2. UPDATE CART IN MONGODB
       await api.updateCartItem({
         sweetId: item.sweetId,
         grams
       });
 
-      // 🔁 3. REFRESH CART FROM BACKEND
       onUpdateItem();
-
     } catch (err) {
-      console.error("STOCK CHECK FAILED:", err);
       setErrors(e => ({
         ...e,
         [item.sweetId]:
-          err?.data?.message || "Failed to validate stock. Please try again"
+          err?.data?.message || "Failed to validate stock"
       }));
     } finally {
       setLoadingStock(s => ({ ...s, [item.sweetId]: false }));
@@ -122,14 +113,12 @@ export default function CartModal({
               return (
                 <div key={item.sweetId} className="cart-item">
                   <div style={{ flex: 1 }}>
-                    <strong>{item.name || item.sweetName || `Sweet #${item.sweetId}`}</strong>
-
+                    <strong>{item.name}</strong>
 
                     <div style={{ marginTop: 6 }}>
                       <input
                         type="number"
                         value={draftQty[item.sweetId] ?? ""}
-                        onFocus={e => e.target.select()}
                         onChange={e =>
                           handleChange(item, e.target.value)
                         }
@@ -139,10 +128,6 @@ export default function CartModal({
                       <span style={{ marginLeft: 6 }}>grams</span>
                     </div>
 
-                    {loadingStock[item.sweetId] && (
-                      <div style={{ fontSize: 12 }}>Checking stock…</div>
-                    )}
-
                     {errors[item.sweetId] && (
                       <div style={{ color: "red", fontSize: 12 }}>
                         {errors[item.sweetId]}
@@ -151,8 +136,7 @@ export default function CartModal({
                   </div>
 
                   <div style={{ textAlign: "right" }}>
-                    <div>₹ {Number(itemPrice).toFixed(2)}</div>
-
+                    <div>₹ {itemPrice}</div>
                     <button
                       style={{
                         marginTop: 6,
@@ -173,7 +157,13 @@ export default function CartModal({
 
             <hr />
             <h3>Total: ₹ {total.toFixed(2)}</h3>
-            <button className="checkout-btn">Checkout</button>
+
+            <button
+              className="checkout-btn"
+              onClick={() => setShowCheckout(true)}
+            >
+              Checkout
+            </button>
           </>
         )}
 
@@ -181,6 +171,18 @@ export default function CartModal({
           Close
         </button>
       </div>
+
+      {/* ✅ CHECKOUT MODAL INSIDE CART OVERLAY */}
+      {showCheckout && (
+        <CheckoutModal
+          onClose={() => setShowCheckout(false)}
+          onSuccess={() => {
+            onUpdateItem();
+            setShowCheckout(false);
+            onClose();
+          }}
+        />
+      )}
     </div>
   );
 }
