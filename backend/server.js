@@ -13,7 +13,7 @@ const sweetsRoutes = require("./routes/sweets");
 const categoriesRoutes = require("./routes/categories");
 const ordersRoutes = require("./routes/orders");
 const customersRoutes = require("./routes/customers");
-
+const cartRoutes = require("./routes/cart");
 const app = express();
 app.use(cors());
 // Parse JSON bodies
@@ -28,6 +28,8 @@ app.use("/api/categories", categoriesRoutes);
 app.use("/api/orders", ordersRoutes);
 app.use("/api/customers", customersRoutes);
 
+app.use("/api/cart", cartRoutes);
+
 // health
 app.get("/", (req, res) => res.json({ ok: true }));
 
@@ -35,11 +37,13 @@ const server = http.createServer(app);
 
 // socket.io with permissive CORS for dev (adjust in prod)
 const io = new Server(server, { cors: { origin: "*" } });
+
 io.on("connection", (socket) => {
-  console.log("🟢 socket connected:", socket.id);
-  socket.on("disconnect", () => console.log("🔴 socket disconnected:", socket.id));
+  console.log("socket connected:", socket.id);
 });
+
 app.set("io", io);
+
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const PORT = process.env.PORT || 4000;

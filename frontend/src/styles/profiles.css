@@ -1,0 +1,99 @@
+.profile-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.profile-modal {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.profile-modal h2 {
+  margin-bottom: 16px;
+}
+
+.profile-modal label {
+  font-size: 14px;
+  color: #444;
+  margin-top: 12px;
+  display: block;
+}
+
+.profile-modal input {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.profile-modal input:disabled {
+  background: #f3f3f3;
+}
+
+.profile-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.profile-actions button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.profile-actions .ghost {
+  background: #e5e5e5;
+}
+
+.profile-actions button:not(.ghost) {
+  background: #10b981;
+  color: white;
+}
+
+.profile-msg {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #0f766e;
+}
+.formUpdate input {
+  width: 25vw;
+}
+#profile {
+  text-align: center;
+  color: black;
+}
+.profile-edits img{
+  width: 20px;
+  height: 20px;
+}
+.profile-edits, #logout {
+  display: flex;
+  height: 40px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 10px 1px 10px;
+  padding-bottom: 0;
+  padding-top: 0;
+  border-radius: 4px;
+  background-color: #ccc;
+  color: black;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: bold;
+}

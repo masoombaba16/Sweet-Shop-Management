@@ -1,68 +1,164 @@
 // frontend/src/components/SweetCard.jsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { api } from "../api";
 import "../styles/customer.css";
+import "../styles/SweetCard.css";
 
-export default function SweetCard({ sweet, apiBase, onBought }) {
-  const [qty, setQty] = useState(1);
+export default function SweetCard({ sweet, apiBase, onAddToCart }) {
+  const MIN_GRAMS = 200;
+
+  const [unit, setUnit] = useState("g"); // g | kg
+  const [input, setInput] = useState("200");
   const [loading, setLoading] = useState(false);
+  const [touched, setTouched] = useState(false); // 👈 NEW
 
-  // image handling: sweet.imageUrl is like /uploads/<fileId>
   const imgSrc = sweet.imageUrl ? `${apiBase}${sweet.imageUrl}` : null;
 
-  async function buy() {
-    if (sweet.quantity <= 0) return alert("Out of stock");
-    setLoading(true);
-    try {
-      await api.purchase(sweet._id, qty);
-      if (onBought) onBought();
-      alert("Purchase successful");
-    } catch (err) {
-      console.error(err);
-      alert(err?.data?.message || "Purchase failed");
-    } finally {
-      setLoading(false);
-    }
-  }
+  // 🔢 Convert input → grams
+  const grams = useMemo(() => {
+    const val = Number(input);
+    if (Number.isNaN(val)) return 0;
+    return unit === "kg" ? Math.round(val * 1000) : Math.round(val);
+  }, [input, unit]);
+
+  const maxGrams = sweet.quantity * 1000;
+  const maxDisplayQty =
+    unit === "kg"
+      ? (maxGrams / 1000).toFixed(2)
+      : maxGrams;
+
+  const isOutOfStock = sweet.quantity <= 0;
+  const belowMin = grams < MIN_GRAMS;
+  const exceedsStock = grams > maxGrams;
+
+  const canBuy =
+    !isOutOfStock &&
+    grams >= MIN_GRAMS &&
+    grams <= maxGrams;
+
+  const totalPrice = useMemo(() => {
+    return ((grams / 1000) * (sweet.price ?? 0)).toFixed(2);
+  }, [grams, sweet.price]);
+    function addToCart() {
+        if (!canBuy || !onAddToCart) return;
+
+        setLoading(true);
+
+        onAddToCart({
+          sweetId: sweet._id,
+          name: sweet.name,
+          pricePerKg: sweet.price,
+          grams,
+          unit,
+          totalPrice: Number(totalPrice),
+          imageUrl: sweet.imageUrl,
+        });
+
+        setLoading(false);
+        alert("Added to cart");
+      }
+
+
 
   return (
     <article className="card">
+      {/* IMAGE */}
       <div className="card-media">
         {imgSrc ? (
-          <img src={imgSrc} alt={sweet.name} onError={(e)=>{ e.target.onerror=null; e.target.src="/placeholder.png"; }} />
+          <img src={imgSrc} alt={sweet.name} />
         ) : (
           <div className="placeholder">No image</div>
         )}
       </div>
 
       <div className="card-body">
+        {/* TITLE */}
         <div className="card-top">
           <h3 className="card-title">{sweet.name}</h3>
-          <div className="card-id">#{sweet.sweetId ?? (sweet._id ? sweet._id.slice(-6) : "")}</div>
+          <span className="card-id">#{sweet.sweetId}</span>
         </div>
 
+        {/* CATEGORY & DESCRIPTION */}
         <p className="card-category">{sweet.category}</p>
         <p className="card-desc">{sweet.description}</p>
 
+        {/* PRICE + STOCK */}
         <div className="card-meta">
-          <div className="price">${(sweet.price ?? 0).toFixed(2)}</div>
-          <div className={`stock ${sweet.quantity > 0 ? (sweet.quantity <= (sweet.lowStockThreshold||5) ? "low":"in") : "out"}`}>
-            {sweet.quantity > 0 ? `${sweet.quantity} in stock` : "Out of stock"}
+          <div className="price">
+            ₹ {(sweet.price ?? 0).toFixed(2)} / kg
+          </div>
+          <div className={`stock ${isOutOfStock ? "out" : "in"}`}>
+            {isOutOfStock ? "Out of stock" : "In stock"}
           </div>
         </div>
 
+        {/* TAGS */}
         <div className="card-tags">
-          {(sweet.tags || []).map(t => <span key={t} className="tag">{t}</span>)}
+          {(sweet.tags || []).map((t) => (
+            <span key={t} className="tag">{t}</span>
+          ))}
         </div>
 
+        {/* QUANTITY SELECT */}
         <div className="card-actions">
-          <div className="qty">
-            <input type="number" min="1" value={qty} onChange={(e)=>setQty(Math.max(1, Number(e.target.value||1)))} />
-          </div>
-          <button className="buy" onClick={buy} disabled={loading || sweet.quantity <= 0}>
-            {loading ? "Processing..." : (sweet.quantity <= 0 ? "Sold out" : "Buy")}
+          <select
+            value={unit}
+            id="selecting-grams"
+            onChange={(e) => {
+              setTouched(true);
+              setUnit(e.target.value);
+              setInput(e.target.value === "kg" ? "0.2" : "200");
+            }}
+          >
+            <option value="g">grams</option>
+            <option value="kg">kg</option>
+          </select>
+
+          <input
+            type="text"
+            id="selecting-quantity"
+            value={input}
+            placeholder={unit === "kg" ? "0.2" : "200"}
+            onChange={(e) => {
+              setTouched(true);
+              setInput(e.target.value);
+            }}
+            onBlur={() => {
+              if (!input) {
+                setInput(unit === "kg" ? "0.2" : "200");
+              }
+            }}
+          />
+
+          <span>{unit === "kg" ? "kg" : "gr"}</span>
+
+          <button
+            className="buy"
+            disabled={!canBuy || loading}
+            onClick={addToCart}
+          >
+            {loading ? "Adding..." : "Add to Cart"}
           </button>
+
         </div>
+
+        {/* ❌ ERRORS — ONLY AFTER USER TOUCHES */}
+        {touched && !canBuy && (
+          <div style={{ color: "red", fontSize: 12, marginTop: 6 }}>
+            {belowMin && "Minimum order is 200 grams.."}
+            {exceedsStock && (
+              <>Maximum available quantity is {maxDisplayQty} {unit === "kg" ? "kg" : "grams"}..</>
+            )}
+            {isOutOfStock && "Item is out of stock.."}
+          </div>
+        )}
+
+        {/* ✅ TOTAL */}
+        {canBuy && (
+          <div style={{ marginTop: 8, fontWeight: 600 }}>
+            Total: ₹ {totalPrice}
+          </div>
+        )}
       </div>
     </article>
   );

@@ -1,0 +1,26 @@
+.card {
+  width: 300px;
+  background-size: cover;
+  background-position: center;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+.card img{
+    width: 100%;
+}
+#selecting-grams {
+    width: 75px;
+    font-size: 15px;
+    border: none;
+    margin-left: 8px;
+}
+#selecting-quantity {
+    max-width:50px ;
+    margin-left: 2px;
+    border: 1px solid black;
+    border-radius: 2px;
+}
+.sweet-card {
+  flex: 0 1 calc(33.333% - 24px); /* 3 per row */
+  max-width: 380px;
+}

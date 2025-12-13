@@ -1,0 +1,41 @@
+.cart-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.cart-modal {
+  background: #fff;
+  width: 380px;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+}
+
+.checkout-btn {
+  width: 100%;
+  background: #16a34a;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  margin-top: 12px;
+}
+
+.close-btn {
+  width: 100%;
+  margin-top: 10px;
+  background: #eee;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+}

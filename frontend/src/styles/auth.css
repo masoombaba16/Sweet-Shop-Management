@@ -37,7 +37,9 @@ body, html {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(20, 20, 20, 0.35);
+  background: linear-gradient(90deg,#aacce3,#877737); 
+  padding:20px 20px; 
+  border-bottom:1px solid #e6eef6; 
   backdrop-filter: blur(6px);
 }
 
@@ -109,15 +111,7 @@ body, html {
   gap: 14px;
   margin-top: 6px;
 }
-#logout{
-  padding: 5px;
-  font-size: 14px;
-  width: fit-content;
-  border-radius: 3px;
-  border: none;
-  cursor: pointer;
-  margin: 2px;
-}
+
 
 .auth-actions .btn {
   flex: 1;
@@ -168,6 +162,22 @@ body, html {
 }
 .forgot-card{
   text-align: center;
+}
+.sect{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0px;
+  padding: none;
+}
+.sect p{
+  margin: 0;
+}
+.sect1{
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
 }
 .sec1,.sec2,.sec3{
   display:flex;

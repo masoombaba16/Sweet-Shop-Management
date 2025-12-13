@@ -1,24 +1,36 @@
 const jwt = require("jsonwebtoken");
-const dotenv = require("dotenv");
-dotenv.config();
-const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
 function authenticate(req, res, next) {
-  const h = req.headers.authorization;
-  if (!h || !h.startsWith("Bearer ")) return res.status(401).json({ message: "Unauthorized" });
-  const token = h.split(" ")[1];
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Authorization token missing" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
   try {
-    const payload = jwt.verify(token, JWT_SECRET);
-    req.user = payload; // { id, email, role }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // ✅ THIS IS THE KEY FIX
+    req.user = {
+      id: decoded.id,
+      email: decoded.email,
+      role: decoded.role,
+      name: decoded.name,
+    };
+
     next();
   } catch (err) {
-    return res.status(401).json({ message: "Invalid token" });
+    console.error("JWT error:", err);
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 }
 
 function requireAdmin(req, res, next) {
-  if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-  if (req.user.role !== "ADMIN") return res.status(403).json({ message: "Forbidden, admin only" });
+  if (!req.user || req.user.role !== "ADMIN") {
+    return res.status(403).json({ message: "Admin access only" });
+  }
   next();
 }
 

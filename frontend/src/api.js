@@ -87,6 +87,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+  updateProfile: (b) =>
+    fetcher("/auth/profile", {
+      method: "PUT",
+      body: JSON.stringify(b),
+    }),
 
   /* -------- SWEETS / PRODUCTS -------- */
   getSweets: (q = "") =>
@@ -100,6 +105,12 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  // cart
+  getCart: () => fetcher("/cart"),
+  addToCart: (data) =>
+    fetcher("/cart/add", { method: "POST", body: JSON.stringify(data) }),
+  removeFromCart: (sweetId) =>
+    fetcher(`/cart/${sweetId}`, { method: "DELETE" }),
 
   updateSweet: (id, body) =>
     fetcher(`/sweets/${id}`, {

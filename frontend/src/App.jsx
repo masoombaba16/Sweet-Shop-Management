@@ -3,12 +3,13 @@ import AuthForm from "./components/AuthForm";
 import Home from "./components/Home";
 import AdminPage from "./pages/Admin";
 import { getUserFromToken, clearToken } from "./api";
-
+import ProfileModal from "./components/ProfileModal";
 import bakeryBg from "./assets/bakery.jpg";
 import "./styles/auth.css";
-
+import edit from "./assets/edit.png";
 export default function App() {
   const [user, setUser] = useState(getUserFromToken());
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     const fn = (e) => {
@@ -39,16 +40,31 @@ export default function App() {
         )}
 
 
-      {/* Overlay */}
       <div className="jsx-overlay"></div>
 
       <header className="topbar">
-        <h1>Sweet Shop</h1>
+        <div className="main-he">
+        <h1>Sweet Shop..</h1>
+        <p className="lead">
+            <i>Delicious sweets. Freshly managed. Real-time stock updates.</i>
+          </p>
+          </div>
         <div className="top-actions">
           {user ? (
             <>
-              <span>{user.name}</span>
+            <div className="sect1">
+              <div className="sect">
+                <i><strong>{user.name} ({user.role})</strong></i>
+              </div>
+              <span onClick={() => setShowProfile(true)}>
+              <div className="profile-edits">
+              <img src={edit} alt="" />
+              <p>Edit</p>
+              </div>
+               </span>
+              
               <button onClick={onLogout} id="logout">Logout</button>
+              </div>
             </>
           ) : (
             <span>Not logged in</span>
@@ -69,6 +85,17 @@ export default function App() {
           <Home />
         )}
       </main>
+            {showProfile && (
+        <ProfileModal
+          user={user}
+          onClose={() => setShowProfile(false)}
+          onUpdate={(u) => {
+            setUser({ ...user, ...u });
+            setShowProfile(false);
+          }}
+        />
+      )}
+
     </div>
   );
 }
