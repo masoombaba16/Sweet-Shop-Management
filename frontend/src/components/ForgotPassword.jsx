@@ -43,7 +43,7 @@ export default function ForgotPassword({ onClose }) {
       <div className="forgot-card">
         <div className="sec1">  
         <h3>Forgot Password</h3>
-        <button className="close-btn" onClick={onClose}>X</button>
+        <button className="close-btnn" onClick={onClose}>X</button>
         </div>
         {step === 1 && (
           <> 

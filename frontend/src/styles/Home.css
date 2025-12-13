@@ -5,3 +5,9 @@
   width: 100%;
   justify-content: center;
 }
+.view-cart-btn{
+  padding: 10px;
+  border-radius: 2px;
+  border: 1px solid black;
+  cursor: pointer;
+}

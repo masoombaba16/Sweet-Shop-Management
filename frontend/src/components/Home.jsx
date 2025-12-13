@@ -1,4 +1,3 @@
-// frontend/src/components/Home.jsx
 import React, { useEffect, useState, useMemo } from "react";
 import { api } from "../api";
 import { socket } from "../socket";
@@ -26,15 +25,77 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
 
-    const [cart, setCart] = useState(() => {
-      try {
-        const saved = localStorage.getItem("sweetshop_cart");
-        return saved ? JSON.parse(saved) : [];
-      } catch {
-        return [];
-      }
-    });
+  const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
+
+  /* ===============================
+     🔐 LOAD CART FROM BACKEND
+     =============================== */
+  async function loadCart() {
+    try {
+      const res = await api.getCart();
+
+// handle all possible backend shapes safely
+      const items =
+        res?.items ||
+        res?.cart?.items ||
+        [];
+
+      setCart(items);
+    } catch {
+      setCart([]);
+    }
+  }
+
+  useEffect(() => {
+    loadCart();
+  }, []);
+
+  /* ===============================
+     🛒 ADD TO CART (MONGO ONLY)
+     =============================== */
+ async function handleAddToCart(item) {
+  try {
+    // 🛑 HARD GUARDS
+    if (
+      !item ||
+      !Number.isFinite(item.sweetId) ||
+      !Number.isFinite(item.grams) ||
+      !Number.isFinite(item.pricePerKg)
+    ) {
+      console.error("INVALID ADD TO CART PAYLOAD:", item);
+      alert("Invalid item data");
+      return;
+    }
+
+    // 🔥 REAL-TIME STOCK CHECK (BACKEND)
+    const sweet = await api.getSweetBySweetId(item.sweetId);
+    const maxGrams = sweet.quantity * 1000;
+
+    if (item.grams > maxGrams) {
+      alert(`Only ${maxGrams} grams available`);
+      return;
+    }
+
+    // ✅ SAVE TO MONGO
+    await api.addToCart({
+      sweetId: item.sweetId,
+      grams: item.grams,
+      pricePerKg: item.pricePerKg
+    });
+
+    // 🔄 REFRESH CART
+    await loadCart();
+
+  } catch (err) {
+    console.error("ADD TO CART FAILED:", err);
+    alert(
+      err?.data?.message ||
+      "Failed to add to cart. Please try again."
+    );
+  }
+}
+
 
   async function loadCategories() {
     try {
@@ -44,9 +105,6 @@ export default function Home() {
       setCategories([]);
     }
   }
-  useEffect(() => {
-    localStorage.setItem("sweetshop_cart", JSON.stringify(cart));
-  }, [cart]);
 
   async function fetchSweets() {
     setLoading(true);
@@ -60,17 +118,16 @@ export default function Home() {
 
       const list = await api.getSweets(params.toString());
 
-      let sorted = (list || []).slice();
-      if (sort === "price_asc") sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
-      else if (sort === "price_desc") sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
-      else if (sort === "name_asc") sorted.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      let sorted = [...list];
+      if (sort === "price_asc") sorted.sort((a, b) => a.price - b.price);
+      else if (sort === "price_desc") sorted.sort((a, b) => b.price - a.price);
+      else if (sort === "name_asc") sorted.sort((a, b) => a.name.localeCompare(b.name));
       else sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       setTotal(sorted.length);
       const start = (page - 1) * perPage;
       setSweets(sorted.slice(start, start + perPage));
-    } catch (err) {
-      console.error("Failed to load sweets", err);
+    } catch {
       setSweets([]);
       setTotal(0);
     } finally {
@@ -86,34 +143,47 @@ export default function Home() {
     fetchSweets();
   }, [q, category, minPrice, maxPrice, sort, page]);
 
-  /* 🔥 REAL-TIME SOCKET */
+  /* ===============================
+     🔥 REAL-TIME SOCKET
+     =============================== */
   useEffect(() => {
-    const onSweetUpdated = (updatedSweet) => {
-      setSweets((prev) =>
-        prev.map((s) => (s._id === updatedSweet._id ? updatedSweet : s))
-      );
-    };
-
-    const onSweetCreated = (newSweet) => {
-      setSweets((prev) => [newSweet, ...prev]);
+    socket.on("sweet_updated", (u) =>
+      setSweets((p) => p.map((s) => (s._id === u._id ? u : s)))
+    );
+    socket.on("sweet_created", (n) => {
+      setSweets((p) => [n, ...p]);
       setTotal((t) => t + 1);
-    };
-
-    const onSweetDeleted = (deletedId) => {
-      setSweets((prev) => prev.filter((s) => s._id !== deletedId));
-      setTotal((t) => Math.max(0, t - 1));
-    };
-
-    socket.on("sweet_updated", onSweetUpdated);
-    socket.on("sweet_created", onSweetCreated);
-    socket.on("sweet_deleted", onSweetDeleted);
+    });
+    socket.on("sweet_deleted", (id) => {
+      setSweets((p) => p.filter((s) => s._id !== id));
+      setTotal((t) => t - 1);
+    });
 
     return () => {
-      socket.off("sweet_updated", onSweetUpdated);
-      socket.off("sweet_created", onSweetCreated);
-      socket.off("sweet_deleted", onSweetDeleted);
+      socket.off("sweet_updated");
+      socket.off("sweet_created");
+      socket.off("sweet_deleted");
     };
   }, []);
+  async function handleUpdateCartItem(sweetId, grams) {
+    // 🛑 HARD GUARD (THIS FIXES EMPTY BODY)
+    if (!Number.isFinite(sweetId) || !Number.isFinite(grams)) {
+      console.warn("SKIPPING INVALID UPDATE:", sweetId, grams);
+      return;
+    }
+
+    await api.updateCartItem({
+      sweetId: Number(sweetId),
+      grams: Number(grams)
+    });
+
+    await loadCart();
+  }
+
+  async function handleDeleteCartItem(sweetId) {
+    await api.removeCartItem(sweetId);
+    await loadCart();
+  }
 
   function clearFilters() {
     setQ("");
@@ -136,7 +206,7 @@ export default function Home() {
               setPage(1);
             }}
           />
-          <button onClick={() => fetchSweets()}>Search</button>
+          <button onClick={fetchSweets}>Search</button>
           <button className="clear" onClick={clearFilters}>Clear</button>
         </div>
 
@@ -182,35 +252,7 @@ export default function Home() {
             key={s._id}
             sweet={s}
             apiBase={API_BASE_NO_API}
-           onAddToCart={(item) =>
-              setCart((prev) => {
-                const existing = prev.find(
-                  (c) => c.sweetId === item.sweetId
-                );
-
-                if (!existing) {
-                  // new sweet
-                  return [...prev, item];
-                }
-
-                // merge quantities
-                return prev.map((c) =>
-                  c.sweetId === item.sweetId
-                    ? {
-                        ...c,
-                        grams: c.grams + item.grams,
-                        totalPrice: Number(
-                          (
-                            ((c.grams + item.grams) / 1000) *
-                            c.pricePerKg
-                          ).toFixed(2)
-                        ),
-                      }
-                    : c
-                );
-              })
-            }
-
+            onAddToCart={handleAddToCart}
           />
         ))}
       </div>
@@ -219,8 +261,26 @@ export default function Home() {
         <CartModal
           cart={cart}
           onClose={() => setShowCart(false)}
+          onUpdateItem={loadCart} 
+          onDeleteItem={handleDeleteCartItem}
         />
+
       )}
+
+      <div className="catalog">
+        <div className="catalog-header">
+          <div>{loading ? "Loading..." : `Showing ${sweets.length} of ${total} sweets`}</div>
+          <div className="pagination-controls">
+            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+              Prev
+            </button>
+            <span>Page {page}</span>
+            <button onClick={() => setPage((p) => p + 1)} disabled={page * perPage >= total}>
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

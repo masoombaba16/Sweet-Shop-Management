@@ -13,13 +13,15 @@ const sweetsRoutes = require("./routes/sweets");
 const categoriesRoutes = require("./routes/categories");
 const ordersRoutes = require("./routes/orders");
 const customersRoutes = require("./routes/customers");
-const cartRoutes = require("./routes/cart");
+const sweetRoutes = require("./routes/sweets");
+
 const app = express();
 app.use(cors());
 // Parse JSON bodies
 app.use(express.json());
 // Parse URL-encoded bodies (forms)
 app.use(express.urlencoded({ extended: true }));
+app.use("/api/sweets", sweetRoutes);
 
 // routes
 app.use("/api/auth", authRoutes);
@@ -28,7 +30,7 @@ app.use("/api/categories", categoriesRoutes);
 app.use("/api/orders", ordersRoutes);
 app.use("/api/customers", customersRoutes);
 
-app.use("/api/cart", cartRoutes);
+app.use("/api/cart", require("./routes/cart"));
 
 // health
 app.get("/", (req, res) => res.json({ ok: true }));

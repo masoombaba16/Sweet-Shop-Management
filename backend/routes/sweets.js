@@ -6,7 +6,7 @@ const path = require("path");
 const Sweet = require("../models/Sweet");
 const Counter = require("../models/Counter");
 const { authenticate, requireAdmin } = require("../middlewares/auth");
-
+const sweetController = require("../controllers/sweetController");
 const router = express.Router();
 
 
@@ -141,6 +141,27 @@ router.get("/", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+router.get("/by-sweet-id/:sweetId", async (req, res) => {
+  try {
+    const sweetId = Number(req.params.sweetId);
+
+    if (!Number.isFinite(sweetId)) {
+      return res.status(400).json({ message: "Invalid sweetId" });
+    }
+
+    const sweet = await Sweet.findOne({ sweetId });
+
+    if (!sweet) {
+      return res.status(404).json({ message: "Sweet not found" });
+    }
+
+    res.json(sweet);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 
 router.put("/:id", authenticate, requireAdmin, async (req, res) => {
   try {
@@ -218,6 +239,8 @@ router.post("/:id/toggle-visible", authenticate, requireAdmin, async (req, res) 
     res.status(500).json({ message: "Server error" });
   }
 });
+router.get("/:id/quantity", sweetController.getSweetQuantity);
+
 
 router.post("/:id/purchase", authenticate, async (req, res) => {
   const sweet = await Sweet.findById(req.params.id);

@@ -39,25 +39,34 @@ export default function SweetCard({ sweet, apiBase, onAddToCart }) {
   const totalPrice = useMemo(() => {
     return ((grams / 1000) * (sweet.price ?? 0)).toFixed(2);
   }, [grams, sweet.price]);
-    function addToCart() {
-        if (!canBuy || !onAddToCart) return;
+async function addToCart() {
+  if (!canBuy) {
+    if (grams < MIN_GRAMS) {
+      alert("Minimum order is 200 grams!");
+    }
+    return;
+  }
 
-        setLoading(true);
+  setLoading(true);
 
-        onAddToCart({
-          sweetId: sweet._id,
-          name: sweet.name,
-          pricePerKg: sweet.price,
-          grams,
-          unit,
-          totalPrice: Number(totalPrice),
-          imageUrl: sweet.imageUrl,
-        });
-
-        setLoading(false);
-        alert("Added to cart");
-      }
-
+  try {
+    // 🔥 TRUST BACKEND FOR FINAL STOCK CHECK
+    await onAddToCart({
+      sweetId: sweet.sweetId,
+      grams,
+      pricePerKg: sweet.price
+    });
+    alert(`${sweet.name} added to cart!`);
+  } catch (err) {
+    console.error("ADD TO CART ERROR:", err);
+    alert(
+      err?.data?.message ||
+      "Failed to add to cart"
+    );
+  } finally {
+    setLoading(false);
+  }
+}
 
 
   return (
@@ -114,21 +123,19 @@ export default function SweetCard({ sweet, apiBase, onAddToCart }) {
             <option value="kg">kg</option>
           </select>
 
-          <input
-            type="text"
-            id="selecting-quantity"
-            value={input}
-            placeholder={unit === "kg" ? "0.2" : "200"}
-            onChange={(e) => {
-              setTouched(true);
-              setInput(e.target.value);
-            }}
-            onBlur={() => {
-              if (!input) {
-                setInput(unit === "kg" ? "0.2" : "200");
-              }
-            }}
-          />
+        <input
+          type="number"
+          id="selecting-quantity"
+          min={unit === "kg" ? 0.2 : 200}
+          max={unit === "kg" ? maxGrams / 1000 : maxGrams}
+          step={unit === "kg" ? 0.1 : 50}
+          value={input}
+          onChange={(e) => {
+            setTouched(true);
+            setInput(e.target.value);
+          }}
+/>
+
 
           <span>{unit === "kg" ? "kg" : "gr"}</span>
 

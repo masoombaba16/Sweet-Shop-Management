@@ -87,6 +87,7 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+
   updateProfile: (b) =>
     fetcher("/auth/profile", {
       method: "PUT",
@@ -100,17 +101,16 @@ export const api = {
   getSweet: (id) =>
     fetcher(`/sweets/${id}`),
 
+  // 🔥 IMPORTANT: FETCH BY business sweetId (NUMBER)
+getSweetBySweetId: (sweetId) =>
+  fetcher(`/sweets/by-sweet-id/${sweetId}`),
+
+
   createSweet: (body) =>
     fetcher("/sweets", {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  // cart
-  getCart: () => fetcher("/cart"),
-  addToCart: (data) =>
-    fetcher("/cart/add", { method: "POST", body: JSON.stringify(data) }),
-  removeFromCart: (sweetId) =>
-    fetcher(`/cart/${sweetId}`, { method: "DELETE" }),
 
   updateSweet: (id, body) =>
     fetcher(`/sweets/${id}`, {
@@ -139,6 +139,32 @@ export const api = {
       method: "POST",
       body: formData,
     }),
+
+  /* -------- CART -------- */
+  getCart: () => fetcher("/cart"),
+
+  addToCart: (body) =>
+    fetcher("/cart/add", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  updateCartItem: (body) =>
+    fetcher("/cart/update", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+
+  removeCartItem: (sweetId) =>
+    fetcher(`/cart/remove/${sweetId}`, {
+      method: "DELETE",
+    }),
+
+  getSweetBySweetId: (sweetId) =>
+    fetcher(`/sweets/by-sweet-id/${sweetId}`),
+  
+  clearCart: () =>
+    fetcher("/cart/clear", { method: "DELETE" }),
 
   /* -------- CATEGORIES -------- */
   listCategories: () =>

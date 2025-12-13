@@ -1,16 +1,46 @@
 const mongoose = require("mongoose");
 
 const cartItemSchema = new mongoose.Schema({
-  sweet: { type: mongoose.Schema.Types.ObjectId, ref: "Sweet", required: true },
-  grams: { type: Number, required: true },
-  pricePerKg: { type: Number, required: true },
-  totalPrice: { type: Number, required: true }
+  sweetId: {
+    type: Number,
+    required: true
+  },
+  name: {                     // ✅ ADD THIS
+    type: String,
+    required: true
+  },
+  grams: {
+    type: Number,
+    required: true
+  },
+  pricePerKg: {
+    type: Number,
+    required: true
+  },
+  totalPrice: {
+    type: Number,
+    required: true
+  }
 });
+
 
 const cartSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", unique: true },
-    items: [cartItemSchema]
+    user: {   // ✅ MUST BE "user"
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true
+    },
+    items: [
+      {
+        sweetId: { type: Number, required: true },
+        name: { type: String, default: "" },
+        grams: { type: Number, required: true },
+        pricePerKg: { type: Number, required: true },
+        totalPrice: { type: Number, required: true }
+      }
+    ]
   },
   { timestamps: true }
 );
