@@ -1,41 +1,73 @@
-// frontend/src/components/Customers.jsx
 import React, { useEffect, useState } from "react";
-import { api } from "../api";
-
-export default function Customers(){
+import '../styles/Customers.css';
+export default function Customers() {
   const [customers, setCustomers] = useState([]);
-  const [q, setQ] = useState("");
-  async function load(){ setCustomers(await api.listCustomers(q)); }
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  useEffect(()=>{ load(); },[]);
+  useEffect(() => {
+    fetch("http://localhost:4000/api/customers", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to fetch customers");
+        return res.json();
+      })
+      .then(data => {
+        setCustomers(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
 
-  async function deactivate(id){ await api.deactivateCustomer(id); load(); }
-  async function ban(id){ await api.banCustomer(id); load(); }
+  const filteredCustomers = customers.filter(c =>
+    `${c.name} ${c.email}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  if (loading) return <p>Loading customers...</p>;
 
   return (
-    <div>
-      <h2>Customers</h2>
-      <div>
-        <input placeholder="Search" value={q} onChange={e=>setQ(e.target.value)} />
-        <button onClick={load}>Search</button>
+    <div className="customers-admin">
+      <div className="customers-header">
+        <h2>Customers</h2>
+
+        <input
+          type="text"
+          placeholder="Search by name or email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
-      <table className="product-table">
-        <thead><tr><th>Email</th><th>Name</th><th>Active</th><th>Banned</th><th>Actions</th></tr></thead>
-        <tbody>
-          {customers.map(c => (
-            <tr key={c._id}>
-              <td>{c.email}</td>
-              <td>{c.name}</td>
-              <td>{c.active ? "Yes" : "No"}</td>
-              <td>{c.banned ? "Yes" : "No"}</td>
-              <td>
-                <button onClick={()=>deactivate(c._id)}>Deactivate</button>
-                <button onClick={()=>ban(c._id)} style={{marginLeft:6}}>Ban</button>
-              </td>
+
+      {filteredCustomers.length === 0 ? (
+        <p>No customers found</p>
+      ) : (
+        <table className="customers-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredCustomers.map(c => (
+              <tr key={c._id}>
+                <td>{c.name}</td>
+                <td>{c.email}</td>
+                <td>{c.role}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

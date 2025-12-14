@@ -33,6 +33,44 @@ router.get("/", authenticate, requireAdmin, async (req, res) => {
 
   res.json(orders);
 });
+/* ===========================
+   ADMIN: FETCH ALL USERS' ORDERS
+=========================== */
+router.get(
+  "/all-users",
+  authenticate,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const users = await User.find(
+        { "orders.0": { $exists: true } }, // users having orders
+        { name: 1, email: 1, orders: 1 }
+      ).lean();
+
+      const allOrders = users.flatMap(user =>
+        (user.orders || []).map(order => ({
+          orderId: order.orderId,
+          address: order.address,
+          items: order.items,
+          subtotal: order.subtotal,
+          createdAt: order.createdAt,
+          userName: user.name,
+          userEmail: user.email
+        }))
+      );
+
+      // sort latest first
+      allOrders.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+
+      res.json(allOrders);
+    } catch (err) {
+      console.error("FETCH ALL USER ORDERS ERROR:", err);
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  }
+);
 
 /* ===========================
    ADMIN: ORDER DETAILS

@@ -8,6 +8,7 @@ import Customers from "../components/Customers";
 import Discounts from "../components/Discounts";
 import MediaManager from "../components/MediaManager";
 import "../styles/admin.css";
+import AllOrders from "../components/AllOrders";
 
 export default function AdminPage() {
   const [tab, setTab] = useState("products");
@@ -36,12 +37,10 @@ export default function AdminPage() {
         )}
 
         {tab === "categories" && <CategoryManager />}
-        {tab === "orders" && <Orders />}
+        {tab === "orders" && <AllOrders />}
         {tab === "customers" && <Customers />}
-        {tab === "discounts" && <Discounts />}
-        {tab === "media" && <MediaManager />}
 
-        {/* ================= ADD SWEET MODAL ================= */}
+
         {showAddSweet && (
           <div
             className="modal-backdrop"

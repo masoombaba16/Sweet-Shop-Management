@@ -3,16 +3,22 @@ const express = require("express");
 const Customer = require("../models/Customer");
 const { authenticate, requireAdmin } = require("../middlewares/auth");
 const router = express.Router();
-
-// list (admin)
+const User = require("../models/User");
 router.get("/", authenticate, requireAdmin, async (req, res) => {
-  const q = req.query.q;
-  const filter = {};
-  if (q) filter.$or = [{ email: { $regex: q, $options: "i" } }, { name: { $regex: q, $options: "i" } }];
-  const customers = await Customer.find(filter).sort({ createdAt: -1 });
-  res.json(customers);
-});
+  try {
+    const customers = await User.find(
+      { role: "USER" },          // only customers
+      { password: 0 }            // exclude password
+    )
+      .sort({ createdAt: -1 })
+      .lean();
 
+    res.json(customers);
+  } catch (err) {
+    console.error("FETCH CUSTOMERS ERROR:", err);
+    res.status(500).json({ message: "Failed to fetch customers" });
+  }
+});
 // update (admin)
 router.put("/:id", authenticate, requireAdmin, async (req, res) => {
   const c = await Customer.findByIdAndUpdate(req.params.id, req.body, { new: true });

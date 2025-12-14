@@ -1,0 +1,42 @@
+.orders-admin {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+#allorders {
+  color: black;
+  text-align: center;
+}
+.order-card {
+  background: #fff;
+  padding: 14px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  color: black;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.order-items {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.order-items th,
+.order-items td {
+  border: 1px solid #ddd;
+  padding: 6px;
+  font-size: 14px;
+}
+
+.order-subtotal {
+  text-align: right;
+  margin-top: 8px;
+  font-weight: bold;
+}
