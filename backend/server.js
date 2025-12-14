@@ -1,4 +1,3 @@
-// backend/server.js
 const express = require("express");
 const http = require("http");
 const cors = require("cors");
@@ -8,83 +7,94 @@ const { Server } = require("socket.io");
 
 dotenv.config();
 
-const authRoutes = require("./routes/auth");
-const sweetsRoutes = require("./routes/sweets");
-const categoriesRoutes = require("./routes/categories");
-const ordersRoutes = require("./routes/orders");
-const customersRoutes = require("./routes/customers");
-const sweetRoutes = require("./routes/sweets");
+const REQUIRED_ENVS = ["MONGODB_URI", "FRONTEND_URL"];
+REQUIRED_ENVS.forEach((key) => {
+  if (!process.env[key]) {
+    console.error(`❌ Missing env variable: ${key}`);
+    process.exit(1);
+  }
+});
 
 const app = express();
-app.use(cors());
-// Parse JSON bodies
-app.use(express.json());
-// Parse URL-encoded bodies (forms)
-app.use(express.urlencoded({ extended: true }));
-app.use("/api/sweets", sweetRoutes);
 
-// routes
-app.use("/api/auth", authRoutes);
-app.use("/api/sweets", sweetsRoutes);
-app.use("/api/categories", categoriesRoutes);
-app.use("/api/orders", ordersRoutes);
-app.use("/api/customers", customersRoutes);
+const allowedOrigins = [process.env.FRONTEND_URL];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/sweets", require("./routes/sweets"));
+app.use("/api/categories", require("./routes/categories"));
+app.use("/api/orders", require("./routes/orders"));
+app.use("/api/customers", require("./routes/customers"));
 app.use("/api/checkout", require("./routes/checkout"));
 app.use("/api/cart", require("./routes/cart"));
 
-// health
-app.get("/", (req, res) => res.json({ ok: true }));
+app.get("/", (req, res) => {
+  res.json({ status: "OK", service: "Sweet Shop API" });
+});
 
 const server = http.createServer(app);
 
-// socket.io with permissive CORS for dev (adjust in prod)
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+  },
+});
+
 
 io.on("connection", (socket) => {
-  console.log("socket connected:", socket.id);
+  console.log("🟢 Socket connected:", socket.id);
 
   socket.on("get-sweets", async () => {
     try {
-      const Sweet = require("./models/Sweet"); // adjust path
+      const Sweet = require("./models/Sweet");
       const sweets = await Sweet.find();
       socket.emit("sweets-update", sweets);
     } catch (err) {
+      console.error("Socket sweets error:", err);
       socket.emit("sweets-error", "Failed to load sweets");
     }
   });
 
   socket.on("disconnect", () => {
-    console.log("socket disconnected:", socket.id);
+    console.log("🔴 Socket disconnected:", socket.id);
   });
 });
 
-
 app.set("io", io);
 
-
-const MONGODB_URI = process.env.MONGODB_URI;
 const PORT = process.env.PORT || 4000;
-if (!MONGODB_URI) {
-  console.error("❌ Missing MONGODB_URI in .env");
-  process.exit(1);
-}
 
-// Connect DB THEN start server
-mongoose.connect(MONGODB_URI)
+mongoose
+  .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("✅ MongoDB connected");
     server.listen(PORT, () => {
-      console.log(`🚀 Server listening on http://localhost:${PORT}`);
+      console.log(`🚀 Server running on port ${PORT}`);
     });
   })
-  .catch(err => {
-    console.error("❌ MongoDB connection error:", err);
+  .catch((err) => {
+    console.error("❌ MongoDB connection failed:", err.message);
     process.exit(1);
   });
 
-// graceful shutdown
+
 process.on("SIGINT", async () => {
-  console.log("Shutting down...");
-  try { await mongoose.disconnect(); } catch {}
+  console.log("🛑 Shutting down server...");
+  try {
+    await mongoose.disconnect();
+  } catch {}
   process.exit(0);
 });

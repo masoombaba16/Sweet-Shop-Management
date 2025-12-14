@@ -1,20 +1,17 @@
-// frontend/src/components/SweetCard.jsx
 import React, { useState, useMemo } from "react";
-import { api } from "../api";
 import "../styles/customer.css";
 import "../styles/SweetCard.css";
 
 export default function SweetCard({ sweet, apiBase, onAddToCart }) {
   const MIN_GRAMS = 200;
 
-  const [unit, setUnit] = useState("g"); // g | kg
+  const [unit, setUnit] = useState("g"); 
   const [input, setInput] = useState("200");
   const [loading, setLoading] = useState(false);
-  const [touched, setTouched] = useState(false); // 👈 NEW
+  const [touched, setTouched] = useState(false); 
 
   const imgSrc = sweet.imageUrl ? `${apiBase}${sweet.imageUrl}` : null;
 
-  // 🔢 Convert input → grams
   const grams = useMemo(() => {
     const val = Number(input);
     if (Number.isNaN(val)) return 0;
@@ -50,7 +47,6 @@ async function addToCart() {
   setLoading(true);
 
   try {
-    // 🔥 TRUST BACKEND FOR FINAL STOCK CHECK
     await onAddToCart({
       sweetId: sweet.sweetId,
       grams,
@@ -71,7 +67,6 @@ async function addToCart() {
 
   return (
     <article className="card">
-      {/* IMAGE */}
       <div className="card-media">
         {imgSrc ? (
           <img src={imgSrc} alt={sweet.name} />
@@ -81,17 +76,14 @@ async function addToCart() {
       </div>
 
       <div className="card-body">
-        {/* TITLE */}
         <div className="card-top">
           <h3 className="card-title">{sweet.name}</h3>
           <span className="card-id">#{sweet.sweetId}</span>
         </div>
 
-        {/* CATEGORY & DESCRIPTION */}
         <p className="card-category">{sweet.category}</p>
         <p className="card-desc">{sweet.description}</p>
 
-        {/* PRICE + STOCK */}
         <div className="card-meta">
           <div className="price">
             ₹ {(sweet.price ?? 0).toFixed(2)} / kg
@@ -101,14 +93,12 @@ async function addToCart() {
           </div>
         </div>
 
-        {/* TAGS */}
         <div className="card-tags">
           {(sweet.tags || []).map((t) => (
             <span key={t} className="tag">{t}</span>
           ))}
         </div>
 
-        {/* QUANTITY SELECT */}
         <div className="card-actions">
           <select
             value={unit}
@@ -149,7 +139,6 @@ async function addToCart() {
 
         </div>
 
-        {/* ❌ ERRORS — ONLY AFTER USER TOUCHES */}
         {touched && !canBuy && (
           <div style={{ color: "red", fontSize: 12, marginTop: 6 }}>
             {belowMin && "Minimum order is 200 grams.."}
@@ -160,7 +149,6 @@ async function addToCart() {
           </div>
         )}
 
-        {/* ✅ TOTAL */}
         {canBuy && (
           <div style={{ marginTop: 8, fontWeight: 600 }}>
             Total: ₹ {totalPrice}

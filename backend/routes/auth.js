@@ -1,4 +1,3 @@
-// backend/routes/auth.js
 const express = require("express");
 const crypto = require("crypto");
 const sendMail = require("../utils/mailer");
@@ -12,9 +11,6 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 const router = express.Router();
 
-/* ======================
-   UPDATE PROFILE
-====================== */
 router.put("/profile", authenticate, async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
@@ -71,9 +67,6 @@ router.put("/profile", authenticate, async (req, res) => {
   }
 });
 
-/* ======================
-   FORGOT PASSWORD
-====================== */
 router.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
@@ -95,9 +88,6 @@ router.post("/forgot-password", async (req, res) => {
   res.json({ message: "OTP sent" });
 });
 
-/* ======================
-   RESET PASSWORD
-====================== */
 router.post("/reset-password", async (req, res) => {
   const { email, otp, newPassword } = req.body;
 
@@ -124,9 +114,6 @@ router.post("/reset-password", async (req, res) => {
   res.json({ message: "Password reset successful" });
 });
 
-/* ======================
-   REGISTER
-====================== */
 router.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -149,9 +136,6 @@ router.post("/register", async (req, res) => {
   });
 });
 
-/* ======================
-   LOGIN
-====================== */
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 

@@ -1,11 +1,8 @@
-// backend/scripts/fix_image_urls.js
-// Run: node scripts/fix_image_urls.js
-
 const mongoose = require("mongoose");
 require("dotenv").config();
 const Sweet = require("../models/Sweet");
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/sweetshop";
+const MONGODB_URI = process.env.MONGODB_URI;
 
 async function run() {
   await mongoose.connect(MONGODB_URI);

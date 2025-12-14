@@ -16,7 +16,7 @@ export default function CartModal({
   const [loadingStock, setLoadingStock] = useState({});
   const [showCheckout, setShowCheckout] = useState(false);
 
-  /* 🔁 Sync cart → editable values */
+
   useEffect(() => {
     const map = {};
     cart.forEach(item => {
@@ -25,7 +25,6 @@ export default function CartModal({
     setDraftQty(map);
   }, [cart]);
 
-  /* 💰 LIVE TOTAL */
   const total = useMemo(() => {
     return cart.reduce((sum, item) => {
       const grams = Number(draftQty[item.sweetId]);
@@ -172,7 +171,6 @@ export default function CartModal({
         </button>
       </div>
 
-      {/* ✅ CHECKOUT MODAL INSIDE CART OVERLAY */}
       {showCheckout && (
         <CheckoutModal
           onClose={() => setShowCheckout(false)}

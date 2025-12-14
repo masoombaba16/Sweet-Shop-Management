@@ -1,4 +1,3 @@
-// frontend/src/components/AdminSidebar.jsx
 import React from "react";
 
 export default function AdminSidebar({ active, onChange }) {

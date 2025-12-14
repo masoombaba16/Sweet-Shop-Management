@@ -1,4 +1,3 @@
-// frontend/src/components/Orders.jsx
 import React, { useEffect, useState } from "react";
 import { api } from "../api";
 

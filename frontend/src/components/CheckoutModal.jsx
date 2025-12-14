@@ -7,7 +7,7 @@ export default function CheckoutModal({ onClose, onSuccess }) {
   const [address, setAddress] = useState("");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(""); // ✅ NEW
+  const [error, setError] = useState(""); 
 
   async function sendOtp() {
     setError("");
@@ -43,9 +43,8 @@ export default function CheckoutModal({ onClose, onSuccess }) {
     await api.verifyOtp({ otp });
     await api.placeOrder({ address });
 
-    // ✅ SUCCESS POPUP
     alert("✅ Order placed successfully! Confirmation sent to your email.");
-    onSuccess(); // closes modal + refreshes cart
+    onSuccess();
     window.location.reload();
   } catch (err) {
     setError(

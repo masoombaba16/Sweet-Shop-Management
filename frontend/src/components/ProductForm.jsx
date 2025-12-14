@@ -37,7 +37,8 @@ export default function ProductForm({ onCreated }) {
     fd.append("image", imageFile);
 
     try {
-      const res = await fetch("http://localhost:4000/api/sweets", {
+      const res = await fetch(
+    `${import.meta.env.VITE_API_BASE}/sweets`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -49,8 +50,6 @@ export default function ProductForm({ onCreated }) {
 
       alert("Sweet added successfully");
       onCreated?.();
-
-      // reset
       setForm({
         name: "",
         price: "",
@@ -72,7 +71,6 @@ export default function ProductForm({ onCreated }) {
 
   return (
     <form className="sweet-form" onSubmit={handleSubmit}>
-      {/* IMAGE PREVIEW */}
       <div className="image-upload">
         {preview ? (
           <img src={preview} alt="Preview" />

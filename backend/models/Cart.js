@@ -5,7 +5,7 @@ const cartItemSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  name: {                     // ✅ ADD THIS
+  name: {                    
     type: String,
     required: true
   },
@@ -26,7 +26,7 @@ const cartItemSchema = new mongoose.Schema({
 
 const cartSchema = new mongoose.Schema(
   {
-    user: {   // ✅ MUST BE "user"
+    user: {  
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,

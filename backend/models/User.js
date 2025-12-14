@@ -68,11 +68,8 @@ const userSchema = new mongoose.Schema(
       default: "USER"
     },
 
-    /* 🔐 PASSWORD RESET */
     forgotPasswordOtp: String,
     forgotPasswordOtpExpires: Date,
-
-    /* 🧾 ORDERS (NO Order.js FILE NEEDED) */
     orders: {
       type: [orderSchema],
       default: []

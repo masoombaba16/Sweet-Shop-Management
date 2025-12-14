@@ -3,10 +3,7 @@ import AdminSidebar from "../components/AdminSidebar";
 import ProductList from "../components/ProductList";
 import ProductForm from "../components/ProductForm";
 import CategoryManager from "../components/CategoryManager";
-import Orders from "../components/Orders";
 import Customers from "../components/Customers";
-import Discounts from "../components/Discounts";
-import MediaManager from "../components/MediaManager";
 import "../styles/admin.css";
 import AllOrders from "../components/AllOrders";
 

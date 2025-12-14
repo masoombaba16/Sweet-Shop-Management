@@ -1,13 +1,13 @@
 const mongoose = require("mongoose");
 
 const sweetSchema = new mongoose.Schema({
-  sweetId: { type: Number, unique: true },  // <-- sequential unique number
+  sweetId: { type: Number, unique: true },  
   name: { type: String, required: true, unique: true },
   category: { type: String, default: "general" },
   description: String,
   price: { type: Number, required: true },
   cost: { type: Number, default: 0 },
-  quantity: { type: Number, default: 0 },   // ensures quantity is always present
+  quantity: { type: Number, default: 0 },   
   imageUrl: String,
   tags: [String],
   visible: { type: Boolean, default: true },

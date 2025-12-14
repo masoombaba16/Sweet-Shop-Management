@@ -1,31 +1,32 @@
 import React, { useEffect, useState } from "react";
-import '../styles/Customers.css';
+import "../styles/Customers.css";
+
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:4000/api/customers", {
+    fetch(`${import.meta.env.VITE_API_BASE}/customers`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`
-      }
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch customers");
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         setCustomers(data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
         setLoading(false);
       });
   }, []);
 
-  const filteredCustomers = customers.filter(c =>
+  const filteredCustomers = customers.filter((c) =>
     `${c.name} ${c.email}`
       .toLowerCase()
       .includes(search.toLowerCase())
@@ -58,7 +59,7 @@ export default function Customers() {
             </tr>
           </thead>
           <tbody>
-            {filteredCustomers.map(c => (
+            {filteredCustomers.map((c) => (
               <tr key={c._id}>
                 <td>{c.name}</td>
                 <td>{c.email}</td>

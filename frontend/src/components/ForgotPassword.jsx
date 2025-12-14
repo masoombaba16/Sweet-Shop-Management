@@ -3,7 +3,7 @@ import { api } from "../api";
 import "../styles/auth.css";
 
 export default function ForgotPassword({ onClose }) {
-  const [step, setStep] = useState(1); // 1=email, 2=otp
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");

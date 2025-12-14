@@ -1,11 +1,5 @@
-// frontend/src/api.js
+const API_BASE = import.meta.env.VITE_API_BASE;
 
-const API_BASE =
-  import.meta.env.VITE_API_BASE || "http://localhost:4000/api";
-
-/* -----------------------------
-   TOKEN HELPERS
------------------------------- */
 function getToken() {
   return localStorage.getItem("token");
 }
@@ -28,9 +22,6 @@ export function getUserFromToken() {
   }
 }
 
-/* -----------------------------
-   CORE FETCHER
------------------------------- */
 async function fetcher(path, opts = {}) {
   const init = { ...opts };
   init.headers = init.headers || {};
@@ -59,11 +50,8 @@ async function fetcher(path, opts = {}) {
   return data;
 }
 
-/* -----------------------------
-   API METHODS
------------------------------- */
+
 export const api = {
-  /* -------- AUTH -------- */
   register: (body) =>
     fetcher("/auth/register", {
       method: "POST",
@@ -94,14 +82,12 @@ export const api = {
       body: JSON.stringify(b),
     }),
 
-  /* -------- SWEETS / PRODUCTS -------- */
   getSweets: (q = "") =>
     fetcher(`/sweets${q ? "?" + q : ""}`),
 
   getSweet: (id) =>
     fetcher(`/sweets/${id}`),
 
-  // 🔥 IMPORTANT: FETCH BY business sweetId (NUMBER)
 getSweetBySweetId: (sweetId) =>
   fetcher(`/sweets/by-sweet-id/${sweetId}`),
 
@@ -140,7 +126,6 @@ getSweetBySweetId: (sweetId) =>
       body: formData,
     }),
 
-  /* -------- CART -------- */
   getCart: () => fetcher("/cart"),
 
   addToCart: (body) =>
@@ -184,7 +169,6 @@ getMyOrders: () => fetcher("/orders/my-orders"),
   clearCart: () =>
     fetcher("/cart/clear", { method: "DELETE" }),
 
-  /* -------- CATEGORIES -------- */
   listCategories: () =>
     fetcher("/categories"),
 
@@ -205,7 +189,6 @@ getMyOrders: () => fetcher("/orders/my-orders"),
       method: "DELETE",
     }),
 
-  /* -------- ORDERS -------- */
   listOrders: () =>
     fetcher("/orders"),
 
@@ -218,7 +201,6 @@ getMyOrders: () => fetcher("/orders/my-orders"),
       body: JSON.stringify({ status }),
     }),
 
-  /* -------- CUSTOMERS -------- */
   listCustomers: (q = "") =>
     fetcher(`/customers${q ? "?q=" + encodeURIComponent(q) : ""}`),
 

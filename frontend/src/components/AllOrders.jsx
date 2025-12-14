@@ -4,8 +4,8 @@ export default function AllOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("http://localhost:4000/api/orders/all-users", {
+useEffect(() => {
+  fetch(`${import.meta.env.VITE_API_BASE}/orders/all-users`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`
       }

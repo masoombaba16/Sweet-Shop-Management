@@ -1,4 +1,3 @@
-import React from "react";
 import "../styles/cart.css";
 
 export default function OrdersModal({ orders, onClose }) {
@@ -33,7 +32,6 @@ export default function OrdersModal({ orders, onClose }) {
                     marginBottom: 24
                   }}
                 >
-                  {/* LEFT SIDE */}
                   <div
                     style={{
                       width: 160,
@@ -57,7 +55,6 @@ export default function OrdersModal({ orders, onClose }) {
                     </div>
                   </div>
 
-                  {/* RIGHT SIDE TABLE */}
                   <div style={{ flex: 1 }}>
                     <table
                       border="1"

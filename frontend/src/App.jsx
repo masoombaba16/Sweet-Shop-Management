@@ -20,7 +20,7 @@ export default function App() {
     return () => window.removeEventListener("storage", fn);
   }, []);
 
-  /* 🔐 ROLE BASED REDIRECT */
+
   useEffect(() => {
     if (!user) return;
 

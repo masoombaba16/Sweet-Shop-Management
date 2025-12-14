@@ -21,6 +21,6 @@
     border-radius: 2px;
 }
 .sweet-card {
-  flex: 0 1 calc(33.333% - 24px); /* 3 per row */
+  flex: 0 1 calc(33.333% - 24px);
   max-width: 380px;
 }

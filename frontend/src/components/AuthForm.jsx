@@ -4,7 +4,7 @@ import ForgotPassword from "./ForgotPassword";
 import "../styles/auth.css";
 
 export default function AuthForm({ onLogin, adminLogin = false }) {
-  const [mode, setMode] = useState("login"); // login | register
+  const [mode, setMode] = useState("login"); 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

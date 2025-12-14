@@ -5,7 +5,7 @@ exports.getSweetQuantity = async (req, res) => {
       return res.status(404).json({ message: "Sweet not found" });
     }
 
-    res.json({ quantity: sweet.quantity }); // quantity in KG
+    res.json({ quantity: sweet.quantity }); 
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch quantity" });
   }

@@ -11,8 +11,6 @@ function authenticate(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // ✅ THIS IS THE KEY FIX
     req.user = {
       id: decoded.id,
       email: decoded.email,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { api } from "../api";
 import { socket } from "../socket";
 import SweetCard from "./SweetCard";
@@ -7,7 +7,7 @@ import "../styles/customer.css";
 import "../styles/Home.css";
 import OrdersModal from "./OrdersModal";
 function buildApiBase() {
-  const apiBase = import.meta.env.VITE_API_BASE || "http://localhost:4000/api";
+  const apiBase = import.meta.env.VITE_API_BASE;
   return apiBase.replace(/\/api\/?$/, "");
 }
 
@@ -30,14 +30,10 @@ export default function Home() {
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
 
-  /* ===============================
-     🔐 LOAD CART FROM BACKEND
-     =============================== */
   async function loadCart() {
     try {
       const res = await api.getCart();
 
-// handle all possible backend shapes safely
       const items =
         res?.items ||
         res?.cart?.items ||
@@ -63,7 +59,7 @@ export default function Home() {
 
  async function handleAddToCart(item) {
   try {
-    // 🛑 HARD GUARDS
+
     if (
       !item ||
       !Number.isFinite(item.sweetId) ||
@@ -75,7 +71,6 @@ export default function Home() {
       return;
     }
 
-    // 🔥 REAL-TIME STOCK CHECK (BACKEND)
     const sweet = await api.getSweetBySweetId(item.sweetId);
     const maxGrams = sweet.quantity * 1000;
 
@@ -84,14 +79,12 @@ export default function Home() {
       return;
     }
 
-    // ✅ SAVE TO MONGO
     await api.addToCart({
       sweetId: item.sweetId,
       grams: item.grams,
       pricePerKg: item.pricePerKg
     });
 
-    // 🔄 REFRESH CART
     await loadCart();
 
   } catch (err) {
@@ -150,9 +143,6 @@ export default function Home() {
     fetchSweets();
   }, [q, category, minPrice, maxPrice, sort, page]);
 
-  /* ===============================
-     🔥 REAL-TIME SOCKET
-     =============================== */
   useEffect(() => {
     socket.on("sweet_updated", (u) =>
       setSweets((p) => p.map((s) => (s._id === u._id ? u : s)))
@@ -173,7 +163,6 @@ export default function Home() {
     };
   }, []);
   async function handleUpdateCartItem(sweetId, grams) {
-    // 🛑 HARD GUARD (THIS FIXES EMPTY BODY)
     if (!Number.isFinite(sweetId) || !Number.isFinite(grams)) {
       console.warn("SKIPPING INVALID UPDATE:", sweetId, grams);
       return;

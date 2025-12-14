@@ -4,9 +4,6 @@ const Cart = require("../models/Cart");
 const Sweet = require("../models/Sweet");
 const { authenticate } = require("../middlewares/auth");
 
-/* -----------------------------
-   GET CART
------------------------------- */
 router.get("/", authenticate, async (req, res) => {
   try {
     let cart = await Cart.findOne({ user: req.user.id });
@@ -46,7 +43,7 @@ router.post("/add", authenticate, async (req, res) => {
 
     if (!cart) {
       cart = new Cart({
-        user: req.user.id,   // ✅ THIS FIXES user:null
+        user: req.user.id,  
         items: []
       });
     }
@@ -133,7 +130,7 @@ router.post("/checkout/otp", authenticate, async (req, res) => {
   req.user.forgotPasswordOtpExpires = Date.now() + 5 * 60 * 1000;
   await req.user.save();
 
-  console.log("📧 OTP:", otp); // later send email
+  console.log("📧 OTP:", otp);
 
   res.json({ message: "OTP sent" });
 });
@@ -152,7 +149,6 @@ router.post("/checkout/confirm", authenticate, async (req, res) => {
     return res.status(400).json({ message: "Cart is empty" });
   }
 
-  // 🔥 reduce stock
   for (const item of cart.items) {
     await Sweet.findOneAndUpdate(
       { sweetId: item.sweetId },

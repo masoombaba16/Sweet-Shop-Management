@@ -6,9 +6,6 @@ const Cart = require("../models/Cart");
 const Sweet = require("../models/Sweet");
 const sendMail = require("../utils/mailer");
 
-/* ============================
-   SEND OTP
-============================ */
 router.post("/send-otp", authenticate, async (req, res) => {
   try {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -39,9 +36,6 @@ router.post("/send-otp", authenticate, async (req, res) => {
   }
 });
 
-/* ============================
-   VERIFY OTP
-============================ */
 router.post("/verify-otp", authenticate, async (req, res) => {
   const { otp } = req.body;
 
@@ -59,7 +53,6 @@ router.post("/verify-otp", authenticate, async (req, res) => {
     return res.status(400).json({ message: "Invalid or expired OTP" });
   }
 
-  // clear OTP
   user.forgotPasswordOtp = undefined;
   user.forgotPasswordOtpExpires = undefined;
   await user.save();
@@ -67,9 +60,6 @@ router.post("/verify-otp", authenticate, async (req, res) => {
   res.json({ message: "OTP verified successfully" });
 });
 
-/* ============================
-   PLACE ORDER
-============================ */
 router.post("/place-order", authenticate, async (req, res) => {
   try {
     const { address, name } = req.body;
@@ -86,7 +76,6 @@ router.post("/place-order", authenticate, async (req, res) => {
 
     let subtotal = 0;
 
-    // 🔥 STOCK VALIDATION & UPDATE
     for (const item of cart.items) {
       const sweet = await Sweet.findOne({ sweetId: item.sweetId });
       if (!sweet) {
@@ -108,7 +97,6 @@ router.post("/place-order", authenticate, async (req, res) => {
       subtotal += item.totalPrice;
     }
 
-    // ✅ SAVE ORDER IN USER
     const order = {
       orderId: `ORD-${Date.now()}`,
       address,
@@ -120,11 +108,9 @@ router.post("/place-order", authenticate, async (req, res) => {
     user.orders.push(order);
     await user.save();
 
-    // ✅ CLEAR CART
     cart.items = [];
     await cart.save();
 
-    // ✅ SEND ORDER CONFIRMATION EMAIL
     const itemsHtml = order.items
       .map(
         i => `

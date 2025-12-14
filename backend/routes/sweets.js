@@ -1,4 +1,3 @@
-// backend/routes/sweets.js
 const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
@@ -25,12 +24,11 @@ router.post(
   upload.single("image"),
   async (req, res) => {
     try {
-      // 🔴 Image is mandatory
+      
       if (!req.file) {
         return res.status(400).json({ message: "Image is required" });
       }
 
-      // 🔹 Auto-increment SweetId
       const counter = await Counter.findOneAndUpdate(
         { name: "sweetId" },
         { $inc: { seq: 1 } },
@@ -39,7 +37,6 @@ router.post(
 
       const bucket = getBucket();
 
-      // 🔹 Upload image to GridFS
       const uploadStream = bucket.openUploadStream(
         req.file.originalname,
         { contentType: req.file.mimetype }
@@ -48,7 +45,7 @@ router.post(
       uploadStream.end(req.file.buffer);
 
       uploadStream.on("finish", async () => {
-        const imageId = uploadStream.id; // ✅ GridFS file ID
+        const imageId = uploadStream.id; 
 
         const sweet = new Sweet({
           sweetId: counter.seq,
@@ -64,13 +61,11 @@ router.post(
           visible: true,
           lowStockThreshold: Number(req.body.lowStockThreshold || 5),
 
-          // 🔥 IMPORTANT
           imageUrl: `/api/sweets/uploads/${imageId.toString()}`
         });
 
         await sweet.save();
 
-        // 🔹 Emit socket event
         const io = req.app.get("io");
         if (io) io.emit("sweet_created", sweet);
 
@@ -278,8 +273,6 @@ router.put(
     }
   }
 );
-
-
 
 router.put("/:id", authenticate, requireAdmin, async (req, res) => {
   try {

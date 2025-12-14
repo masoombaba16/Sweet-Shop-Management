@@ -24,7 +24,9 @@ export default function EditSweetModal({ sweet, onClose, onSave }) {
         category: sweet.category
       });
 
-      setPreview(`http://localhost:4000${sweet.imageUrl}`);
+      setPreview(
+        `${import.meta.env.VITE_SOCKET_URL}${sweet.imageUrl}`
+      );
     }
   }, [sweet]);
 
@@ -41,8 +43,6 @@ export default function EditSweetModal({ sweet, onClose, onSave }) {
       alert("Please fill all required fields");
       return;
     }
-
-    // image is REQUIRED overall
     if (!preview) {
       alert("Image is required");
       return;

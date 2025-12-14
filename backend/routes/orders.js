@@ -3,11 +3,8 @@ const router = express.Router();
 const { authenticate, requireAdmin } = require("../middlewares/auth");
 const Order = require("../models/Order");
 const Customer = require("../models/Customer");
-const User = require("../models/User"); // ✅ FIX
+const User = require("../models/User"); 
 
-/* ===========================
-   USER: MY ORDERS
-=========================== */
 router.get("/my-orders", authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).lean();
@@ -23,9 +20,6 @@ router.get("/my-orders", authenticate, async (req, res) => {
   }
 });
 
-/* ===========================
-   ADMIN: LIST ALL ORDERS
-=========================== */
 router.get("/", authenticate, requireAdmin, async (req, res) => {
   const orders = await Order.find()
     .populate("customer")
@@ -33,9 +27,7 @@ router.get("/", authenticate, requireAdmin, async (req, res) => {
 
   res.json(orders);
 });
-/* ===========================
-   ADMIN: FETCH ALL USERS' ORDERS
-=========================== */
+
 router.get(
   "/all-users",
   authenticate,
@@ -43,7 +35,7 @@ router.get(
   async (req, res) => {
     try {
       const users = await User.find(
-        { "orders.0": { $exists: true } }, // users having orders
+        { "orders.0": { $exists: true } }, 
         { name: 1, email: 1, orders: 1 }
       ).lean();
 
@@ -59,7 +51,6 @@ router.get(
         }))
       );
 
-      // sort latest first
       allOrders.sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
@@ -72,18 +63,12 @@ router.get(
   }
 );
 
-/* ===========================
-   ADMIN: ORDER DETAILS
-=========================== */
 router.get("/:id", authenticate, requireAdmin, async (req, res) => {
   const o = await Order.findById(req.params.id).populate("customer");
   if (!o) return res.status(404).json({ message: "Not found" });
   res.json(o);
 });
 
-/* ===========================
-   ADMIN: UPDATE STATUS
-=========================== */
 router.post("/:id/status", authenticate, requireAdmin, async (req, res) => {
   const { status } = req.body;
   const o = await Order.findById(req.params.id);
