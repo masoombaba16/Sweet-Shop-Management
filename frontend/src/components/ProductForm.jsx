@@ -1,72 +1,144 @@
-// frontend/src/components/ProductForm.jsx
-import React, { useState, useEffect } from "react";
-import { api } from "../api";
-import "../styles/product.css";
+import React, { useState } from "react";
 
 export default function ProductForm({ onCreated }) {
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
-  const [categories, setCategories] = useState([]);
-  const [price, setPrice] = useState("");
-  const [cost, setCost] = useState("");
-  const [quantity, setQuantity] = useState(0);
-  const [description, setDescription] = useState("");
-  const [tags, setTags] = useState("");
-  const [image, setImage] = useState(null);
+  const [form, setForm] = useState({
+    name: "",
+    price: "",
+    quantity: "",
+    category: "",
+    description: "",
+    tags: ""
+  });
+
+  const [imageFile, setImageFile] = useState(null);
+  const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    api.listCategories().then(setCategories).catch(()=>{});
-  }, []);
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  async function uploadImage() {
-    if (!image) return null;
-    const fd = new FormData();
-    fd.append("image", image);
-    const res = await api.uploadImage(fd);
-    return res.imageUrl;
-  }
+    setImageFile(file);
+    setPreview(URL.createObjectURL(file));
+  };
 
-  async function submit(e) {
-    e?.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!imageFile) {
+      alert("Image is required");
+      return;
+    }
+
     setLoading(true);
+
+    const fd = new FormData();
+    Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+    fd.append("image", imageFile);
+
     try {
-      const imageUrl = await uploadImage();
-      const payload = {
-        name, category, description,
-        price: Number(price), cost: Number(cost || 0),
-        quantity: Number(quantity), tags: tags.split(",").map(t=>t.trim()).filter(Boolean),
-        imageUrl
-      };
-      await api.createSweet(payload);
-      alert("Created");
-      setName(""); setCategory(""); setPrice(""); setCost(""); setQuantity(0); setDescription(""); setTags(""); setImage(null);
-      if (onCreated) onCreated();
-      window.dispatchEvent(new Event("refresh-products"));
+      const res = await fetch("http://localhost:4000/api/sweets", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        },
+        body: fd
+      });
+
+      if (!res.ok) throw new Error("Create failed");
+
+      alert("Sweet added successfully");
+      onCreated?.();
+
+      // reset
+      setForm({
+        name: "",
+        price: "",
+        quantity: "",
+        category: "",
+        description: "",
+        tags: ""
+      });
+      setImageFile(null);
+      setPreview(null);
+
     } catch (err) {
-      alert(err?.data?.message || "Error");
-    } finally { setLoading(false); }
-  }
+      console.error(err);
+      alert("Failed to add sweet");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <form className="product-form" onSubmit={submit}>
-      <h3>Add new sweet</h3>
-      <input placeholder="Name" value={name} onChange={e=>setName(e.target.value)} required />
-      <select value={category} onChange={e=>setCategory(e.target.value)}>
-        <option value="">-- Category --</option>
-        {categories.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}
-      </select>
-      <input placeholder="Price" type="number" step="0.01" value={price} onChange={e=>setPrice(e.target.value)} required />
-      <input placeholder="Cost (optional)" type="number" step="0.01" value={cost} onChange={e=>setCost(e.target.value)} />
-      <input placeholder="Quantity" type="number" value={quantity} onChange={e=>setQuantity(e.target.value)} />
-      <input placeholder="Tags (comma separated)" value={tags} onChange={e=>setTags(e.target.value)} />
-      <textarea placeholder="Description" value={description} onChange={e=>setDescription(e.target.value)} />
-      <div>
-        <input type="file" accept="image/*" onChange={e=>setImage(e.target.files[0])} />
+    <form className="sweet-form" onSubmit={handleSubmit}>
+      {/* IMAGE PREVIEW */}
+      <div className="image-upload">
+        {preview ? (
+          <img src={preview} alt="Preview" />
+        ) : (
+          <div className="image-placeholder">
+            Select Image
+          </div>
+        )}
+
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          required
+        />
       </div>
-      <div style={{ marginTop: 8 }}>
-        <button type="submit" disabled={loading}>{loading ? "Saving..." : "Add Sweet"}</button>
+
+      <div className="form-grid">
+        <input
+          placeholder="Sweet Name"
+          value={form.name}
+          onChange={e => setForm({ ...form, name: e.target.value })}
+          required
+        />
+
+        <input
+          type="number"
+          placeholder="Price per kg"
+          value={form.price}
+          onChange={e => setForm({ ...form, price: e.target.value })}
+          required
+        />
+
+        <input
+          type="number"
+          placeholder="Quantity (kg)"
+          value={form.quantity}
+          onChange={e => setForm({ ...form, quantity: e.target.value })}
+          required
+        />
+
+        <input
+          placeholder="Category"
+          value={form.category}
+          onChange={e => setForm({ ...form, category: e.target.value })}
+          required
+        />
+
+        <textarea
+          placeholder="Description"
+          rows="3"
+          value={form.description}
+          onChange={e => setForm({ ...form, description: e.target.value })}
+          required
+        />
+
+        <input
+          placeholder="Tags (comma separated)"
+          value={form.tags}
+          onChange={e => setForm({ ...form, tags: e.target.value })}
+        />
       </div>
+
+      <button type="submit" disabled={loading}>
+        {loading ? "Saving..." : "Add Sweet"}
+      </button>
     </form>
   );
 }

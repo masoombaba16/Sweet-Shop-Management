@@ -18,33 +18,80 @@ function getBucket() {
   return new mongoose.mongo.GridFSBucket(db, { bucketName: "images" });
 }
 
-router.post("/", authenticate, requireAdmin, async (req, res) => {
-  try {
-    const counter = await Counter.findOneAndUpdate(
-      { name: "sweetId" },
-      { $inc: { seq: 1 } },
-      { new: true, upsert: true }
-    );
+router.post(
+  "/",
+  authenticate,
+  requireAdmin,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      // 🔴 Image is mandatory
+      if (!req.file) {
+        return res.status(400).json({ message: "Image is required" });
+      }
 
-    const payload = {
-      sweetId: counter.seq,
-      ...req.body,
-    };
+      // 🔹 Auto-increment SweetId
+      const counter = await Counter.findOneAndUpdate(
+        { name: "sweetId" },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+      );
 
-    const sweet = await Sweet.create(payload);
+      const bucket = getBucket();
 
-    const io = req.app.get("io");
-    if (io) io.emit("sweet_created", sweet);
+      // 🔹 Upload image to GridFS
+      const uploadStream = bucket.openUploadStream(
+        req.file.originalname,
+        { contentType: req.file.mimetype }
+      );
 
-    res.status(201).json(sweet);
-  } catch (err) {
-    if (err.code === 11000) {
-      return res.status(409).json({ message: "Duplicate name or SweetId" });
+      uploadStream.end(req.file.buffer);
+
+      uploadStream.on("finish", async () => {
+        const imageId = uploadStream.id; // ✅ GridFS file ID
+
+        const sweet = new Sweet({
+          sweetId: counter.seq,
+          name: req.body.name,
+          category: req.body.category,
+          description: req.body.description,
+          price: Number(req.body.price),
+          cost: Number(req.body.cost || 0),
+          quantity: Number(req.body.quantity),
+          tags: req.body.tags
+            ? req.body.tags.split(",").map(t => t.trim())
+            : [],
+          visible: true,
+          lowStockThreshold: Number(req.body.lowStockThreshold || 5),
+
+          // 🔥 IMPORTANT
+          imageUrl: `/api/sweets/uploads/${imageId.toString()}`
+        });
+
+        await sweet.save();
+
+        // 🔹 Emit socket event
+        const io = req.app.get("io");
+        if (io) io.emit("sweet_created", sweet);
+
+        return res.status(201).json(sweet);
+      });
+
+      uploadStream.on("error", (err) => {
+        console.error("GridFS upload error:", err);
+        return res.status(500).json({ message: "Image upload failed" });
+      });
+
+    } catch (err) {
+      if (err.code === 11000) {
+        return res.status(409).json({ message: "Duplicate name or SweetId" });
+      }
+      console.error("Create sweet error:", err);
+      return res.status(500).json({ message: "Server error" });
     }
-    console.error("Create sweet error:", err);
-    res.status(500).json({ message: "Server error" });
   }
-});
+);
+
 
 router.post(
   "/upload-image",
@@ -162,6 +209,77 @@ router.get("/by-sweet-id/:sweetId", async (req, res) => {
   }
 });
 
+router.put(
+  "/product/:id",
+  authenticate,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const sweet = await Sweet.findById(req.params.id);
+      if (!sweet) {
+        return res.status(404).json({ message: "Sweet not found" });
+      }
+
+      // update fields
+      sweet.name = req.body.name;
+      sweet.price = Number(req.body.price);
+      sweet.quantity = Number(req.body.quantity);
+      sweet.description = req.body.description;
+      sweet.category = req.body.category;
+      sweet.tags = req.body.tags
+        ? req.body.tags.split(",").map(t => t.trim())
+        : [];
+
+      if (req.file) {
+        const bucket = getBucket();
+
+        const uploadStream = bucket.openUploadStream(
+          req.file.originalname,
+          { contentType: req.file.mimetype }
+        );
+
+        uploadStream.end(req.file.buffer);
+
+        uploadStream.on("finish", async () => {
+          // ✅ CORRECT GRIDFS FILE ID ACCESS
+          const fileId = uploadStream.id;
+
+          sweet.imageUrl = `/api/sweets/uploads/${fileId.toString()}`;
+
+          await sweet.save();
+
+          req.app.get("io").emit(
+            "sweets-update",
+            await Sweet.find({ visible: true })
+          );
+
+          return res.json({ ok: true });
+        });
+
+        uploadStream.on("error", (err) => {
+          console.error("GridFS upload error:", err);
+          return res.status(500).json({ message: "Image upload failed" });
+        });
+
+      } else {
+        await sweet.save();
+
+        req.app.get("io").emit(
+          "sweets-update",
+          await Sweet.find({ visible: true })
+        );
+
+        return res.json({ ok: true });
+      }
+
+    } catch (err) {
+      console.error("EDIT SWEET ERROR:", err);
+      return res.status(500).json({ message: "Failed to update sweet" });
+    }
+  }
+);
+
+
 
 router.put("/:id", authenticate, requireAdmin, async (req, res) => {
   try {
@@ -219,6 +337,22 @@ router.post("/:id/restock", authenticate, requireAdmin, async (req, res) => {
   res.json(sweet);
 });
 
+router.put("/:id/stock", async (req, res) => {
+  const { delta } = req.body;
+
+  const sweet = await Sweet.findById(req.params.id);
+  if (!sweet) return res.status(404).json({ message: "Sweet not found" });
+
+  sweet.quantity = Math.max(0, sweet.quantity + delta);
+  await sweet.save();
+
+  req.app.get("io").emit(
+    "sweets-update",
+    await Sweet.find({ visible: true })
+  );
+
+  res.json({ ok: true });
+});
 
 router.post("/:id/toggle-visible", authenticate, requireAdmin, async (req, res) => {
   try {

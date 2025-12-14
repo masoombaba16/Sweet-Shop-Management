@@ -1,4 +1,3 @@
-// frontend/src/pages/Admin.jsx
 import React, { useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
 import ProductList from "../components/ProductList";
@@ -12,28 +11,66 @@ import "../styles/admin.css";
 
 export default function AdminPage() {
   const [tab, setTab] = useState("products");
+  const [showAddSweet, setShowAddSweet] = useState(false);
+
   return (
     <div className="admin-wrap">
       <AdminSidebar active={tab} onChange={setTab} />
+
       <main className="admin-main">
         {tab === "products" && (
           <>
-            <h2>Products</h2>
-            <div className="grid">
-              <div className="col">
-                <ProductForm onCreated={() => window.dispatchEvent(new Event("refresh-products"))} />
-              </div>
-              <div className="col">
-                <ProductList />
-              </div>
+            <div className="products-header">
+              <h2 id="pp">Products</h2>
+
+              <button
+                className="add-sweet-btn"
+                onClick={() => setShowAddSweet(true)}
+              >
+                ➕ Add New Sweet
+              </button>
             </div>
+
+            <ProductList />
           </>
         )}
+
         {tab === "categories" && <CategoryManager />}
         {tab === "orders" && <Orders />}
         {tab === "customers" && <Customers />}
         {tab === "discounts" && <Discounts />}
         {tab === "media" && <MediaManager />}
+
+        {/* ================= ADD SWEET MODAL ================= */}
+        {showAddSweet && (
+          <div
+            className="modal-backdrop"
+            onClick={() => setShowAddSweet(false)}
+          >
+            <div
+              className="modal modal-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2>Add New Sweet</h2>
+
+              <ProductForm
+                onCreated={() => {
+                  setShowAddSweet(false);
+                  window.dispatchEvent(new Event("refresh-products"));
+                }}
+              />
+
+              <div className="modal-actions">
+                <button
+                  className="btn-secondary"
+                  onClick={() => setShowAddSweet(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

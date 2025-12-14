@@ -10,3 +10,96 @@
 h2 { margin-top:0; }
 .product-table { width:100%; border-collapse:collapse; }
 .product-table th, .product-table td { border:1px solid #eee; padding:8px; text-align:left; }
+.products-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+/* ===== ADD SWEET FORM ===== */
+.sweet-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* IMAGE UPLOAD */
+.image-upload {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f3f3f3;
+}
+
+.image-upload img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+  font-size: 14px;
+}
+
+.image-upload input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* FORM GRID */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.form-grid textarea {
+  grid-column: span 2;
+}
+
+.sweet-form input,
+.sweet-form textarea {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* SUBMIT BUTTON */
+.sweet-form button {
+  background: #1976d2;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.sweet-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.add-sweet-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.add-sweet-btn:hover {
+  background: #125aa3;
+}

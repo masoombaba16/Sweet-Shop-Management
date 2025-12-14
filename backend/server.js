@@ -42,7 +42,22 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 io.on("connection", (socket) => {
   console.log("socket connected:", socket.id);
+
+  socket.on("get-sweets", async () => {
+    try {
+      const Sweet = require("./models/Sweet"); // adjust path
+      const sweets = await Sweet.find();
+      socket.emit("sweets-update", sweets);
+    } catch (err) {
+      socket.emit("sweets-error", "Failed to load sweets");
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("socket disconnected:", socket.id);
+  });
 });
+
 
 app.set("io", io);
 

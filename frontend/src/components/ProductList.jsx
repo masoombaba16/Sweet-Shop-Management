@@ -1,75 +1,61 @@
-// frontend/src/components/ProductList.jsx
 import React, { useEffect, useState } from "react";
-import { api } from "../api";
+import { io } from "socket.io-client";
+import ProductCard from "./ProductCard";
+import "../styles/productCard.css";
+
+const socket = io("http://localhost:4000");
 
 export default function ProductList() {
   const [sweets, setSweets] = useState([]);
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  async function load() {
-    const data = await api.getSweets();
-    setSweets(data);
-  }
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    load();
-    function onRefresh(){ setRefreshKey(k=>k+1); load(); }
-    window.addEventListener("refresh-products", onRefresh);
-    return () => window.removeEventListener("refresh-products", onRefresh);
+    socket.emit("get-sweets");
+    socket.on("sweets-update", setSweets);
+
+    return () => socket.off("sweets-update");
   }, []);
 
-  async function del(id) {
-    if (!confirm("Delete?")) return;
-    await api.deleteSweet(id);
-    await load();
-  }
-  async function restock(id) {
-    const q = Number(prompt("Restock qty", "10") || 0);
-    if (!q) return;
-    await api.restock(id, q);
-    await load();
-  }
-  async function toggle(id) {
-    await api.toggleVisible(id);
-    await load();
-  }
+    const updateStock = async (id, deltaKg) => {
+      return fetch(`http://localhost:4000/api/sweets/${id}/stock`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ delta: deltaKg })
+      });
+    };
+
+
+    const filtered = sweets.filter(s => {
+      const q = search.toLowerCase();
+
+      return (
+        s.sweetId?.toString().includes(q) ||   // ✅ sweetId search
+        s.name?.toLowerCase().includes(q) ||
+        s.category?.toLowerCase().includes(q) ||
+        s.description?.toLowerCase().includes(q)
+      );
+    });
+
 
   return (
-    <div>
-      <h3>All sweets</h3>
-      <table className="product-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Price</th>
-            <th>Qty</th>
-            <th>Tags</th>
-            <th>Visible</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+    <>
+      <div className="search-bar">
+        <input
+          placeholder="Search sweets..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
-        <tbody>
-          {sweets.map(s => (
-            <tr key={s._id}>
-             <td>{s.sweetId ?? (s._id ? s._id.slice(-6) : "")}</td>
-              <td><b>{s.name}</b></td>
-              <td>{s.category}</td>
-              <td>${(s.price ?? 0).toFixed(2)}</td>
-              <td>{s.quantity ?? 0}</td>
-              <td>{(s.tags||[]).join(", ")}</td>
-              <td>{s.visible ? "Yes" : "No"}</td>
-              <td>
-                <button onClick={()=>restock(s._id)}>Restock</button>
-                <button onClick={()=>toggle(s._id)} style={{marginLeft:6}}>{s.visible ? "Disable" : "Enable"}</button>
-                <button onClick={()=>del(s._id)} style={{marginLeft:6}}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+      <div className="product-grid">
+        {filtered.map(s => (
+          <ProductCard
+            key={s._id}
+            sweet={s}
+            onUpdateStock={updateStock}
+          />
+        ))}
+      </div>
+    </>
   );
 }
