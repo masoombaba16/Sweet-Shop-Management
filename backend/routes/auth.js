@@ -1,3 +1,4 @@
+// backend/routes/auth.js
 const express = require("express");
 const crypto = require("crypto");
 const sendMail = require("../utils/mailer");
@@ -11,6 +12,9 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 const router = express.Router();
 
+/* ======================
+   UPDATE PROFILE
+====================== */
 router.put("/profile", authenticate, async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
@@ -67,6 +71,9 @@ router.put("/profile", authenticate, async (req, res) => {
   }
 });
 
+/* ======================
+   FORGOT PASSWORD
+====================== */
 router.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
@@ -88,6 +95,9 @@ router.post("/forgot-password", async (req, res) => {
   res.json({ message: "OTP sent" });
 });
 
+/* ======================
+   RESET PASSWORD
+====================== */
 router.post("/reset-password", async (req, res) => {
   const { email, otp, newPassword } = req.body;
 
@@ -114,28 +124,60 @@ router.post("/reset-password", async (req, res) => {
   res.json({ message: "Password reset successful" });
 });
 
+/* ======================
+   REGISTER
+====================== */
 router.post("/register", async (req, res) => {
-  const { name, email, password } = req.body;
+  try {
+    const { name, email, password } = req.body;
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = await User.create({
-    name,
-    email,
-    password: hashedPassword,
-    role: "USER",
-  });
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
-  await sendMail({
-    to: email,
-    subject: "Welcome to Sweet Shop 🍬",
-    html: `<h2>Welcome ${name}!</h2><p>Your account is ready.</p>`,
-  });
+    // 🔴 Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({
+        message: "User already present. Please login.",
+      });
+    }
 
-  res.status(201).json({
-    message: "Registration successful. Confirmation email sent.",
-  });
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: "USER",
+    });
+
+    // 🔔 Send welcome email (short & clean)
+    sendMail({
+      to: email,
+      subject: "Welcome to Sweet Shop 🍬",
+      html: `
+        <p>Hi ${name},</p>
+        <p>Welcome to <b>Sweet Shop</b>! Your account has been created successfully.</p>
+        <p>You can now log in and start ordering your favorite sweets 🍰</p>
+        <p>— Sweet Shop Team</p>
+      `,
+    }).catch(err =>
+      console.error("❌ Welcome email failed:", err.message)
+    );
+
+    return res.status(201).json({
+      message: "Registration successful",
+    });
+  } catch (err) {
+    console.error("Register error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
 });
 
+/* ======================
+   LOGIN
+====================== */
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 

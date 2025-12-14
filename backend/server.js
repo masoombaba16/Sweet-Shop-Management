@@ -32,9 +32,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/* =========================
-   ROUTES
-========================= */
+
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/sweets", require("./routes/sweets"));
 app.use("/api/categories", require("./routes/categories"));

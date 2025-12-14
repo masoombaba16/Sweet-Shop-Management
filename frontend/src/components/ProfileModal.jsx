@@ -8,24 +8,38 @@ export default function ProfileModal({ user, onClose, onUpdate }) {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
-  async function submit(e) {
-    e.preventDefault();
-    setMsg("");
-    try {
-      setLoading(true);
-      const updated = await api.updateProfile({
-        name,
-        password: password || undefined,
-      });
-      onUpdate(updated.user);
-      setMsg("Profile updated successfully");
-      setPassword("");
-    } catch (err) {
-      setMsg(err?.data?.message || "Update failed");
-    } finally {
-      setLoading(false);
-    }
+async function submit(e) {
+  e.preventDefault();
+  setMsg("");
+
+  // 🔴 Prevent useless request
+  if (
+    name.trim() === user.name &&
+    password.trim() === ""
+  ) {
+    setMsg("No changes to update");
+    return;
   }
+
+  try {
+    setLoading(true);
+
+    const payload = {};
+    if (name.trim() !== user.name) payload.name = name.trim();
+    if (password.trim()) payload.password = password;
+
+    const updated = await api.updateProfile(payload);
+
+    onUpdate(updated.user);
+    setMsg("Profile updated successfully");
+    setPassword("");
+  } catch (err) {
+    setMsg(err?.data?.message || "Update failed");
+  } finally {
+    setLoading(false);
+  }
+}
+
 
   return (
     <div className="profile-backdrop" onClick={onClose}>
@@ -58,9 +72,15 @@ export default function ProfileModal({ user, onClose, onUpdate }) {
             <button type="button" className="ghost" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save"}
-            </button>
+            <button
+                type="submit"
+                disabled={
+                  loading ||
+                  (name.trim() === user.name && password.trim() === "")
+                }
+              >
+                {loading ? "Saving..." : "Save"}
+              </button>
           </div>
         </form>
       </div>

@@ -49,7 +49,7 @@ export default function AuthForm({ onLogin, adminLogin = false }) {
         onLogin?.(res.user);
       } else {
         await api.register({ name, email, password });
-        alert("Account created successfully, Confirmation email sent. Please login.");
+        alert("Account created successfully, Confirmation email sent. Check SPAM.. Please login.");
         setMode("login");
         setName("");
         setConfirmPassword("");
