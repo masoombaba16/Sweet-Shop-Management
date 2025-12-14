@@ -3,6 +3,31 @@
 🚀 Live Application
 👉 https://sweet-shop-management-i94x.onrender.com/
 
+
+🛠 Admin Credentials
+
+Email: masoombaba657@gmail.com
+
+Password: 123456
+
+👤 Customer (User) Credentials
+
+Email: masoombaba61@gmail.com
+
+Password: 123
+
+ℹ️ Important Notes
+
+You may register a new customer account if desired.
+
+To access admin features, you must log in using admin credentials.
+
+The application automatically redirects users based on their role:
+
+Admin → Admin Dashboard
+
+Customer → Customer Home Page
+
 A full-stack Sweet Shop Management System that allows customers to browse, search, and purchase sweets, while administrators manage inventory, pricing, and orders.
 The application supports real-time inventory updates, OTP-based order confirmation, and secure role-based access.
 
@@ -205,3 +230,12 @@ MongoDB connection error	Check MONGO_URI
 OTP email not received	Verify SendGrid API key & sender
 Socket.IO not updating	Ensure backend is running
 CORS error	Check backend CORS settings
+
+
+
+Finally Deployed Backend and Frontend in Render and here is the Deployed Website Link : https://sweet-shop-management-i94x.onrender.com/
+
+
+
+
+
