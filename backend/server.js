@@ -7,41 +7,34 @@ const { Server } = require("socket.io");
 
 dotenv.config();
 
-const REQUIRED_ENVS = ["MONGODB_URI", "FRONTEND_URL"];
-REQUIRED_ENVS.forEach((key) => {
-  if (!process.env[key]) {
-    console.error(`❌ Missing env variable: ${key}`);
-    process.exit(1);
-  }
-});
+/* =========================
+   BASIC ENV CHECK
+========================= */
+if (!process.env.MONGODB_URI) {
+  console.error("❌ Missing MONGODB_URI");
+  process.exit(1);
+}
 
+/* =========================
+   APP SETUP
+========================= */
 const app = express();
 
-const allowedOrigins = [process.env.FRONTEND_URL];
-
-
+/* ---------- ALLOW ALL ORIGINS (REST) ---------- */
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // allow server-to-server or curl requests
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(new Error("Not allowed by CORS"));
-    },
+    origin: "*",
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
   })
 );
-
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+/* =========================
+   ROUTES
+========================= */
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/sweets", require("./routes/sweets"));
 app.use("/api/categories", require("./routes/categories"));
@@ -51,19 +44,21 @@ app.use("/api/checkout", require("./routes/checkout"));
 app.use("/api/cart", require("./routes/cart"));
 
 app.get("/", (req, res) => {
-  res.json({ status: "OK", service: "Sweet Shop API" });
+  res.json({ status: "OK", message: "Sweet Shop Backend Running" });
 });
 
+/* =========================
+   SERVER + SOCKET.IO
+========================= */
 const server = http.createServer(app);
 
+/* ---------- ALLOW ALL ORIGINS (SOCKET.IO) ---------- */
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    credentials: true,
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   },
 });
-
 
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);
@@ -74,7 +69,7 @@ io.on("connection", (socket) => {
       const sweets = await Sweet.find();
       socket.emit("sweets-update", sweets);
     } catch (err) {
-      console.error("Socket sweets error:", err);
+      console.error("❌ Socket sweets error:", err);
       socket.emit("sweets-error", "Failed to load sweets");
     }
   });
@@ -86,6 +81,9 @@ io.on("connection", (socket) => {
 
 app.set("io", io);
 
+/* =========================
+   DATABASE + START
+========================= */
 const PORT = process.env.PORT || 4000;
 
 mongoose
@@ -97,11 +95,13 @@ mongoose
     });
   })
   .catch((err) => {
-    console.error("❌ MongoDB connection failed:", err.message);
+    console.error("❌ MongoDB connection error:", err.message);
     process.exit(1);
   });
 
-
+/* =========================
+   GRACEFUL SHUTDOWN
+========================= */
 process.on("SIGINT", async () => {
   console.log("🛑 Shutting down server...");
   try {
