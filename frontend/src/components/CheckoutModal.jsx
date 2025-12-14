@@ -9,26 +9,31 @@ export default function CheckoutModal({ onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(""); 
 
-  async function sendOtp() {
-    setError("");
+async function sendOtp() {
+  setError("");
 
-    if (!address.trim()) {
-      setError("Please enter delivery address");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await api.sendOtp();
-      setStep("OTP");
-    } catch (err) {
-      setError(
-        err?.data?.message || "Failed to send OTP. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
+  if (!address.trim()) {
+    setError("Please enter delivery address");
+    return;
   }
+
+  setLoading(true);
+  try {
+    await api.sendOtp();
+
+    alert(
+      "📩 OTP has been sent to your email.\n\nPlease check your Inbox and Spam folder."
+    );
+
+    setStep("OTP");
+  } catch (err) {
+    setError(
+      err?.data?.message || "Failed to send OTP. Please try again."
+    );
+  } finally {
+    setLoading(false);
+  }
+}
 
  async function confirmOrder() {
   setError("");
@@ -43,7 +48,7 @@ export default function CheckoutModal({ onClose, onSuccess }) {
     await api.verifyOtp({ otp });
     await api.placeOrder({ address });
 
-    alert("✅ Order placed successfully! Confirmation sent to your email.");
+    alert("✅ Order placed successfully! Confirmation sent to your email. Please check in SPAM also..");
     onSuccess();
     window.location.reload();
   } catch (err) {
