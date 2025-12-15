@@ -231,6 +231,121 @@ OTP email not received	Verify SendGrid API key & sender
 Socket.IO not updating	Ensure backend is running
 CORS error	Check backend CORS settings
 
+🤖 My AI Usage
+
+AI tools were actively used throughout the development of this project as productivity enhancers and co-pilots, while all core logic, architecture decisions, and final implementations were reviewed, validated, and refined manually.
+
+🔧 AI Tools Used
+
+Google Gemini AI
+
+ChatGPT
+
+🧠 How Gemini AI Was Used
+
+Gemini AI was primarily used for visual assets, ideation, and development support:
+
+Generated different kinds of sweet images used in the UI for product display and visual enhancement
+
+Assisted in generating initial boilerplate code for backend routes, controllers, and frontend components
+
+Helped debug runtime and logical issues, especially related to:
+
+API integration
+
+State management
+
+UI rendering issues
+
+Provided suggestions to enhance UI/UX, including layout ideas and component structuring
+
+Assisted in optimizing user flows for better usability
+
+🤖 How ChatGPT Was Used
+
+ChatGPT was used extensively as a development assistant:
+
+Generated boilerplate code for:
+
+Backend APIs
+
+Authentication flows
+
+Frontend UI components
+
+Helped design RESTful API structures and endpoint organization
+
+Assisted in writing and refining:
+
+Feature logic
+
+Validation rules
+
+Error handling patterns
+
+Helped debug:
+
+JWT authentication issues
+
+OTP verification flows
+
+WebSocket (Socket.IO) real-time update logic
+
+Assisted in improving:
+
+Code readability
+
+Naming conventions
+
+Documentation (including this README)
+
+🛠 What Was Implemented Manually
+
+Despite AI assistance, the following were designed and implemented manually:
+
+Application architecture and folder structure
+
+Database schema design (MongoDB models)
+
+Business logic for:
+
+Inventory handling
+
+OTP validation
+
+Order placement and billing
+
+Role-based authorization rules
+
+WebSocket event handling and synchronization
+
+UI behavior and state management
+
+Integration and coordination between backend and frontend
+
+Final refactoring, optimization, and testing
+
+🔍 Review & Responsibility
+
+All AI-generated outputs were:
+
+Carefully reviewed for correctness
+
+Modified or rewritten where necessary
+
+Integrated only after full understanding
+
+Never copied from external repositories or third-party codebases
+
+AI was used as a supporting tool, not as a replacement for engineering judgment.
+
+🧠 Reflection on AI Usage
+
+Using AI tools significantly improved development speed, helped unblock complex issues, and enhanced creativity—especially for UI design and debugging.
+However, maintaining code ownership, understanding, and accountability remained a priority throughout the project.
+
+AI was leveraged responsibly to augment development, while ensuring originality, correctness, and maintainability of the codebase.
+
 
 
 Finally Deployed Backend and Frontend in Render and here is the Deployed Website Link : https://sweet-shop-management-i94x.onrender.com/
